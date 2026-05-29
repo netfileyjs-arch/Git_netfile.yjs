@@ -1,0 +1,894 @@
+{% extends "base.html" %}
+
+{% block title %}{{ work.code }} - {{ work.title }}{% endblock %}
+
+{% block content %}
+<!-- 작품 정보 섹션 -->
+<div class="work-hero">
+    <div class="work-hero-content">
+        <div class="work-hero-section">
+            {% if work.kr_name %}
+            <div class="actress-thumbnail-hero">
+                <img src="{{ work.actress_image or 'https://via.placeholder.com/150' }}" alt="{{ work.kr_name }}" class="actress-thumbnail">
+            </div>
+            {% else %}
+            <div class="work-hero-image">🎬</div>
+            {% endif %}
+        </div>
+        <div class="work-hero-info">
+            <p class="work-label">{{ work.label }}</p>
+            <h1 class="work-code-large">{{ work.code }}</h1>
+            <h2 class="work-title-large">{{ work.title }}</h2>
+
+            {% if work.kr_name %}
+            <div class="work-actress-info">
+                <span class="label">출연 배우</span>
+                <a href="/actress/{{ work.actress_id }}" class="actress-link">
+                    {{ work.kr_name }} ({{ work.en_name }})
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- 평점 -->
+            <div class="work-rating-large">
+                {% if work.rating > 0 %}
+                <span class="rating-value">⭐ {{ work.rating }}</span>
+                <div class="rating-bar">
+                    <div class="rating-fill" style="width: {{ work.rating * 10 }}%"></div>
+                </div>
+                {% else %}
+                <span class="rating-none">평점 없음</span>
+                {% endif %}
+            </div>
+
+            <!-- 통계 -->
+            <div class="work-stats">
+                <div class="stat">
+                    <span class="stat-label">조회수</span>
+                    <span class="stat-value">{{ work.view_count }}</span>
+                </div>
+                {% if work.release_date %}
+                <div class="stat">
+                    <span class="stat-label">출시일</span>
+                    <span class="stat-value">{{ work.release_date }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 액션 버튼 -->
+            <div class="work-actions">
+                <button class="btn btn-heart" id="favBtn" onclick="toggleFavorite()">
+                    ❤️ 찜하기
+                </button>
+                <button class="btn btn-secondary" onclick="shareWork()">
+                    🔗 공유
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 상세 정보 -->
+<div class="work-details-container">
+    <div class="work-details-main">
+        <!-- 설명 -->
+        {% if work.description %}
+        <section class="section">
+            <h2>📝 상세 정보</h2>
+            <div class="work-description">
+                {{ work.description }}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- 작품 정보 박스 -->
+        <section class="section">
+            <h2>ℹ️ 작품 정보</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">품번</span>
+                    <span class="info-value">{{ work.code }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">레이블</span>
+                    <span class="info-value">{{ work.label or '정보 없음' }}</span>
+                </div>
+                {% if work.release_date %}
+                <div class="info-item">
+                    <span class="info-label">출시일</span>
+                    <span class="info-value">{{ work.release_date }}</span>
+                </div>
+                {% endif %}
+                <div class="info-item">
+                    <span class="info-label">조회수</span>
+                    <span class="info-value">{{ work.view_count }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 같은 레이블 작품 -->
+        <section class="section">
+            <h2>🏷️ {{ work.label }}의 다른 작품</h2>
+            <div id="sameLabel" class="grid-container">
+                <div class="placeholder">로드 중...</div>
+            </div>
+        </section>
+
+        <!-- 추천 작품 -->
+        <section class="section">
+            <h2>⭐ 평점 높은 추천 작품</h2>
+            <div id="recommendedWorks" class="grid-container">
+                <div class="placeholder">로드 중...</div>
+            </div>
+        </section>
+
+        <!-- 추가 정보 -->
+        <section class="section extra-info">
+            <h2>📊 추가 정보</h2>
+            <div class="info-cards">
+                <div class="info-card">
+                    <h3>💫 인기도</h3>
+                    <div class="popularity-bar">
+                        <div class="popularity-fill" id="popularityBar"></div>
+                    </div>
+                    <p class="info-text">{{ work.view_count }}명이 조회했습니다</p>
+                </div>
+                <div class="info-card">
+                    <h3>⭐ 평가</h3>
+                    {% if work.rating > 0 %}
+                    <div class="rating-display">
+                        <span class="big-rating">{{ work.rating }}</span>
+                        <span class="out-of">/10</span>
+                    </div>
+                    {% else %}
+                    <p class="info-text">아직 평가가 없습니다</p>
+                    {% endif %}
+                </div>
+                <div class="info-card">
+                    <h3>📅 정보</h3>
+                    {% if work.release_date %}
+                    <p class="info-text">출시: {{ work.release_date }}</p>
+                    {% else %}
+                    <p class="info-text">출시일 미정</p>
+                    {% endif %}
+                    {% if work.label %}
+                    <p class="info-text">제작: {{ work.label }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 사이드바 -->
+    <aside class="work-sidebar">
+        <div class="sidebar-card">
+            <h3>빠른 정보</h3>
+            <dl class="info-list">
+                <dt>품번</dt>
+                <dd>{{ work.code }}</dd>
+
+                {% if work.kr_name %}
+                <dt>배우</dt>
+                <dd><a href="/actress/{{ work.actress_id }}">{{ work.kr_name }}</a></dd>
+                {% endif %}
+
+                {% if work.label %}
+                <dt>제작사</dt>
+                <dd>{{ work.label }}</dd>
+                {% endif %}
+
+                {% if work.release_date %}
+                <dt>출시일</dt>
+                <dd>{{ work.release_date }}</dd>
+                {% endif %}
+
+                {% if work.rating > 0 %}
+                <dt>평점</dt>
+                <dd>
+                    <strong>{{ work.rating }}/10</strong>
+                    <div class="mini-rating-bar">
+                        <div class="mini-rating-fill" style="width: {{ work.rating * 10 }}%"></div>
+                    </div>
+                </dd>
+                {% endif %}
+            </dl>
+        </div>
+
+        <div class="sidebar-card">
+            <h3>작업</h3>
+            <button class="sidebar-btn" onclick="toggleFavorite()">
+                ❤️ 찜하기
+            </button>
+            <button class="sidebar-btn" onclick="shareWork()">
+                🔗 공유
+            </button>
+            <button class="sidebar-btn" onclick="reportWork()">
+                🚩 신고
+            </button>
+        </div>
+
+        <div class="sidebar-card related">
+            <h3>같은 배우 작품</h3>
+            <div id="sameActressWorks">
+                <p class="placeholder">로드 중...</p>
+            </div>
+        </div>
+    </aside>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 작품 히어로 섹션 */
+.work-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 3rem 1rem;
+    margin: -2rem -1rem 2rem -1rem;
+    border-radius: 0 0 15px 15px;
+}
+
+.work-hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.work-hero-section {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.work-hero-image {
+    font-size: 5rem;
+    min-width: 120px;
+    height: 120px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.actress-thumbnail-hero {
+    width: 120px;
+    height: 150px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.actress-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.work-hero-info {
+    flex: 1;
+}
+
+.work-label {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.work-code-large {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+}
+
+.work-title-large {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    opacity: 0.95;
+}
+
+.work-actress-info {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.work-actress-info .label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.actress-link {
+    color: white;
+    font-weight: 600;
+    border-bottom: 2px solid white;
+    transition: opacity 0.3s;
+}
+
+.actress-link:hover {
+    opacity: 0.8;
+}
+
+/* 평점 */
+.work-rating-large {
+    margin-bottom: 1.5rem;
+}
+
+.rating-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.rating-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.rating-fill {
+    height: 100%;
+    background: var(--warning);
+    transition: width 0.5s;
+}
+
+.rating-none {
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* 통계 */
+.work-stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.work-stats .stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.work-stats .stat-label {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.work-stats .stat-value {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* 액션 버튼 */
+.work-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 상세 정보 컨테이너 */
+.work-details-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+}
+
+.work-details-main {
+    min-width: 0;
+}
+
+/* 설명 */
+.work-description {
+    background: var(--bg-white);
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 정보 그리드 */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    background: var(--bg-white);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* 사이드바 */
+.work-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sidebar-card {
+    background: var(--bg-white);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow);
+}
+
+.sidebar-card h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.info-list dt {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.info-list dd {
+    color: var(--text-dark);
+    margin-left: 0;
+    margin-bottom: 0.5rem;
+}
+
+.info-list a {
+    font-weight: 600;
+}
+
+.mini-rating-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0.3rem;
+}
+
+.mini-rating-fill {
+    height: 100%;
+    background: var(--warning);
+}
+
+.sidebar-btn {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 0.5rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border-light);
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    color: var(--text-dark);
+}
+
+.sidebar-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.sidebar-card.related {
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-white) 100%);
+}
+
+.sidebar-card.related .placeholder {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    padding: 1rem;
+    text-align: center;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .work-hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .work-hero-image {
+        font-size: 5rem;
+    }
+
+    .work-code-large {
+        font-size: 1.5rem;
+    }
+
+    .work-title-large {
+        font-size: 1.2rem;
+    }
+
+    .work-actress-info {
+        justify-content: center;
+    }
+
+    .work-details-container {
+        grid-template-columns: 1fr;
+    }
+
+    .work-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .work-actions {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentWorkId = {{ work.id }};
+let currentActressId = {{ work.actress_id or 'null' }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 찜 상태 확인
+    checkFavoriteStatus();
+
+    // 인기도 바 설정
+    setPopularityBar();
+
+    // 같은 배우 작품 로드
+    if (currentActressId) {
+        loadSameActressWorks();
+    }
+
+    // 같은 레이블 작품 로드
+    loadSameLabelWorks();
+
+    // 추천 작품 로드
+    loadRecommendedWorks();
+});
+
+function checkFavoriteStatus() {
+    fetch('/api/favorites')
+        .then(r => r.json())
+        .then(favorites => {
+            const isFavorited = favorites.some(f => f.id === currentWorkId);
+            const btn = document.getElementById('favBtn');
+            if (isFavorited) {
+                btn.classList.add('favorited');
+                btn.textContent = '❤️ 찜 해제';
+            }
+        });
+}
+
+function setPopularityBar() {
+    const viewCount = {{ work.view_count }};
+    const maxViews = 1000;
+    const percentage = Math.min((viewCount / maxViews) * 100, 100);
+    const bar = document.getElementById('popularityBar');
+    if (bar) {
+        bar.style.width = percentage + '%';
+    }
+}
+
+function toggleFavorite() {
+    fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_id: currentWorkId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const btn = document.getElementById('favBtn');
+            btn.classList.add('favorited');
+            btn.textContent = '❤️ 찜 해제';
+        }
+    })
+    .catch(() => {
+        fetch('/api/favorites', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ work_id: currentWorkId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const btn = document.getElementById('favBtn');
+                btn.classList.remove('favorited');
+                btn.textContent = '❤️ 찜하기';
+            }
+        });
+    });
+}
+
+function shareWork() {
+    const url = window.location.href;
+    const code = '{{ work.code }}';
+
+    if (navigator.share) {
+        navigator.share({
+            title: code,
+            text: '{{ work.title }}',
+            url: url
+        });
+    } else {
+        // Fallback: 클립보드에 복사
+        navigator.clipboard.writeText(url).then(() => {
+            alert('링크가 복사되었습니다!');
+        });
+    }
+}
+
+function reportWork() {
+    alert('신고 기능은 향후 업데이트될 예정입니다.');
+}
+
+function loadSameActressWorks() {
+    fetch(`/api/actresses/${currentActressId}/works`)
+        .then(r => r.json())
+        .then(works => {
+            const container = document.getElementById('sameActressWorks');
+            const otherWorks = works.filter(w => w.id !== currentWorkId).slice(0, 5);
+
+            if (otherWorks.length > 0) {
+                container.innerHTML = otherWorks.map(w => `
+                    <div class="related-item">
+                        <a href="/work/${w.id}" class="related-code">${w.code}</a>
+                        <p class="related-title">${w.title}</p>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p class="placeholder">다른 작품이 없습니다</p>';
+            }
+        });
+}
+
+function loadSameLabelWorks() {
+    const label = '{{ work.label }}';
+    if (!label || label === 'None') return;
+
+    fetch(`/api/works/by-label/${encodeURIComponent(label)}`)
+        .then(r => r.json())
+        .then(works => {
+            const container = document.getElementById('sameLabel');
+            const otherWorks = works.filter(w => w.id !== currentWorkId);
+
+            if (otherWorks.length > 0) {
+                container.innerHTML = otherWorks.map(w => `
+                    <div class="work-card" data-work-id="${w.id}">
+                        <div class="work-image">🎬</div>
+                        <div class="work-info">
+                            <h3 class="work-code">${w.code}</h3>
+                            <p class="work-title">${w.title}</p>
+                            ${w.kr_name ? `<p class="work-actress">${w.kr_name}</p>` : ''}
+                            ${w.rating > 0 ? `<div class="work-rating"><span class="stars">⭐ ${w.rating}</span></div>` : ''}
+                            <a href="/work/${w.id}" class="btn-view">보기</a>
+                        </div>
+                    </div>
+                `).join('');
+
+                // 카드 클릭 이벤트
+                document.querySelectorAll('#sameLabel .work-card').forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        if (e.target.closest('.btn-view')) return;
+                        window.location.href = `/work/${this.dataset.workId}`;
+                    });
+                });
+            } else {
+                container.innerHTML = '<div class="placeholder">같은 제작사 다른 작품이 없습니다</div>';
+            }
+        });
+}
+
+function loadRecommendedWorks() {
+    const container = document.getElementById('recommendedWorks');
+
+    // 같은 레이블의 작품들 추천 (API 필요 - 일단 모의 데이터)
+    fetch('/api/search?q=&type=work&page=1')
+        .then(r => r.json())
+        .then(data => {
+            const recommended = data.works
+                .filter(w => w.id !== currentWorkId)
+                .sort((a, b) => b.rating - a.rating)
+                .slice(0, 6);
+
+            if (recommended.length > 0) {
+                container.innerHTML = recommended.map(w => `
+                    <div class="work-card" data-work-id="${w.id}">
+                        <div class="work-image">🎬</div>
+                        <div class="work-info">
+                            <h3 class="work-code">${w.code}</h3>
+                            <p class="work-title">${w.title}</p>
+                            ${w.kr_name ? `<p class="work-actress">${w.kr_name}</p>` : ''}
+                            ${w.rating > 0 ? `<div class="work-rating"><span class="stars">⭐ ${w.rating}</span></div>` : ''}
+                            <a href="/work/${w.id}" class="btn-view">보기</a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        });
+}
+</script>
+
+<style>
+.related-item {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.related-item:last-child {
+    border-bottom: none;
+}
+
+.related-code {
+    font-weight: 600;
+    color: var(--primary);
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.related-title {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-view {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    transition: background 0.3s;
+}
+
+.btn-view:hover {
+    background: var(--primary-dark);
+}
+
+/* 추가 정보 섹션 */
+.extra-info {
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-white) 100%);
+    border-radius: 10px;
+    padding: 2rem;
+    border: 1px solid var(--border-light);
+}
+
+.extra-info h2 {
+    margin-bottom: 1.5rem;
+}
+
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.info-card h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.info-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0.5rem 0;
+}
+
+.popularity-bar {
+    width: 100%;
+    height: 12px;
+    background: var(--border-light);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.8rem;
+}
+
+.popularity-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--warning) 100%);
+    transition: width 0.5s;
+}
+
+.rating-display {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    margin-bottom: 0.8rem;
+}
+
+.big-rating {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.out-of {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .info-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .big-rating {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}

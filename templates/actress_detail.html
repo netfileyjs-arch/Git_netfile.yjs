@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}{{ actress.kr_name }} - 품번기{% endblock %}
+
+{% block content %}
+<!-- 배우 정보 섹션 -->
+<div class="actress-hero">
+    <div class="actress-hero-content">
+        <div class="actress-hero-image">
+            {% if actress.image_url %}
+            <img src="{{ actress.image_url }}" alt="{{ actress.kr_name }}" class="actress-photo">
+            {% else %}
+            👩
+            {% endif %}
+        </div>
+        <div class="actress-hero-info">
+            <h1 class="actress-name">{{ actress.kr_name }}</h1>
+            <p class="actress-name-sub">{{ actress.en_name }}</p>
+            <p class="actress-name-jp">{{ actress.jp_name }}</p>
+
+            <div class="actress-stats">
+                <div class="stat">
+                    <span class="stat-number">{{ works|length }}</span>
+                    <span class="stat-label">출연 작품</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="avgRating">0.0</span>
+                    <span class="stat-label">평균 평점</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="totalViews">0</span>
+                    <span class="stat-label">총 조회수</span>
+                </div>
+            </div>
+
+            <button class="btn btn-heart" onclick="toggleActressFavorite()">
+                ❤️ 팬하기
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 통계 대시보드 -->
+<section class="section stats-dashboard">
+    <h2>📊 활동 통계</h2>
+    <div class="stats-cards">
+        <div class="stats-card">
+            <div class="stat-icon">🎬</div>
+            <div class="stat-content">
+                <p class="stat-value" id="totalWorks">{{ works|length }}</p>
+                <p class="stat-label">총 출연작품</p>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-content">
+                <p class="stat-value" id="avgRatingStats">0.0</p>
+                <p class="stat-label">평균 평점</p>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stat-icon">👁️</div>
+            <div class="stat-content">
+                <p class="stat-value" id="totalViewsStats">0</p>
+                <p class="stat-label">누적 조회수</p>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stat-icon">⭐5</div>
+            <div class="stat-content">
+                <p class="stat-value" id="topRated">-</p>
+                <p class="stat-label">최고 평점</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 배우 소개 -->
+{% if actress.bio %}
+<section class="section">
+    <h2>📝 소개</h2>
+    <div class="actress-bio">
+        {{ actress.bio }}
+    </div>
+</section>
+{% endif %}
+
+<!-- 인기 작품 -->
+<section class="section">
+    <h2>🔥 인기 작품</h2>
+    <div id="popularWorks" class="grid-container">
+        <div class="placeholder">로드 중...</div>
+    </div>
+</section>
+
+<!-- 출연 작품 -->
+<section class="section">
+    <h2>🎬 {{ actress.kr_name }}의 출연 작품 ({{ works|length }}개)</h2>
+
+    {% if works|length > 0 %}
+    <div class="works-grid">
+        {% for work in works %}
+        <div class="work-card" data-work-id="{{ work.id }}">
+            <div class="work-image">
+                <img src="https://api.dicebear.com/7.x/personas/svg?seed={{ work.code }}&size=150" alt="{{ work.code }}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div class="work-info">
+                <h3 class="work-code">{{ work.code }}</h3>
+                <p class="work-title">{{ work.title }}</p>
+                {% if work.label %}
+                <p class="work-label">{{ work.label }}</p>
+                {% endif %}
+                {% if work.rating > 0 %}
+                <div class="work-rating">
+                    <span class="stars">⭐ {{ work.rating }}</span>
+                </div>
+                {% endif %}
+                {% if work.release_date %}
+                <p class="work-date">📅 {{ work.release_date }}</p>
+                {% endif %}
+                <a href="/work/{{ work.id }}" class="btn-view">상세보기</a>
+                <button class="btn-favorite" title="찜하기">❤️</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="placeholder">아직 등록된 작품이 없습니다</div>
+    {% endif %}
+</section>
+
+<!-- 추천 배우 -->
+<section class="section recommended">
+    <h2>👩 추천 배우</h2>
+    <div id="recommendedActresses" class="grid-container">
+        <div class="placeholder">로드 중...</div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 배우 히어로 섹션 */
+.actress-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 3rem 1rem;
+    margin: -2rem -1rem 2rem -1rem;
+    border-radius: 0 0 15px 15px;
+}
+
+.actress-hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.actress-hero-image {
+    font-size: 8rem;
+    min-width: 150px;
+    text-align: center;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.actress-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.actress-hero-info {
+    flex: 1;
+}
+
+.actress-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.actress-name-sub {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 0.3rem;
+}
+
+.actress-name-jp {
+    font-size: 1rem;
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+}
+
+.actress-stats {
+    display: flex;
+    gap: 2rem;
+    margin: 1.5rem 0;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* 배우 소개 */
+.actress-bio {
+    background: var(--bg-white);
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    line-height: 1.8;
+    color: var(--text-dark);
+}
+
+/* 작품 그리드 */
+.works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+.work-card {
+    background: var(--bg-white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+}
+
+.work-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.work-image {
+    height: 120px;
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--border-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.placeholder-image {
+    font-size: 3rem;
+}
+
+.work-info {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.work-code {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.2rem;
+}
+
+.work-title {
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+}
+
+.work-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-light);
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    display: inline-block;
+    width: fit-content;
+    margin-bottom: 0.3rem;
+}
+
+.work-rating {
+    font-size: 0.9rem;
+    color: var(--warning);
+    margin-bottom: 0.3rem;
+}
+
+.work-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.btn-view {
+    background: var(--primary);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    transition: background 0.3s;
+}
+
+.btn-view:hover {
+    background: var(--primary-dark);
+}
+
+.btn-favorite {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255, 20, 147, 0.2);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-favorite:hover {
+    background: rgba(255, 20, 147, 0.4);
+    transform: scale(1.1);
+}
+
+.btn-favorite.favorited {
+    background: var(--danger);
+    color: white;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .actress-hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .actress-hero-image {
+        font-size: 5rem;
+    }
+
+    .actress-name {
+        font-size: 1.8rem;
+    }
+
+    .actress-stats {
+        justify-content: center;
+        gap: 1.5rem;
+    }
+
+    .works-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+}
+
+/* 통계 대시보드 */
+.stats-dashboard {
+    background: linear-gradient(135deg, #fff9fb 0%, #fff5f9 100%);
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    padding: 2rem;
+}
+
+.stats-dashboard h2 {
+    margin-bottom: 1.5rem;
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+}
+
+.stats-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(255, 20, 147, 0.1);
+    transition: all 0.3s;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(255, 20, 147, 0.2);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    min-width: 50px;
+    text-align: center;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0.3rem 0 0 0;
+}
+
+.work-views {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stats-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 평균 평점 계산
+    const works = [
+        {% for work in works %}
+        { id: {{ work.id }}, code: '{{ work.code }}', title: '{{ work.title }}', rating: {{ work.rating }}, view_count: {{ work.view_count or 0 }} },
+        {% endfor %}
+    ];
+
+    if (works.length > 0) {
+        const ratedWorks = works.filter(w => w.rating > 0);
+        const avgRating = ratedWorks.length > 0
+            ? (ratedWorks.reduce((sum, w) => sum + w.rating, 0) / ratedWorks.length).toFixed(1)
+            : 0;
+        const totalViews = works.reduce((sum, w) => sum + w.view_count, 0);
+        const maxRating = ratedWorks.length > 0 ? Math.max(...ratedWorks.map(w => w.rating)) : 0;
+
+        // 메인 히어로 통계 업데이트
+        document.getElementById('avgRating').textContent = avgRating;
+
+        // 대시보드 통계 업데이트
+        document.getElementById('totalWorks').textContent = works.length;
+        document.getElementById('avgRatingStats').textContent = avgRating;
+        document.getElementById('totalViewsStats').textContent = totalViews.toLocaleString();
+        document.getElementById('topRated').textContent = maxRating > 0 ? maxRating.toFixed(1) : '-';
+
+        // 인기 작품 표시 (조회수 기준)
+        showPopularWorks(works);
+
+        // 추천 배우 로드
+        loadRecommendedActresses();
+    }
+
+    // 찜하기 버튼
+    document.querySelectorAll('.btn-favorite').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const card = this.closest('.work-card');
+            const workId = card.dataset.workId;
+            toggleFavorite(workId, this);
+        });
+    });
+
+    // 배우명 클릭 시 해당 배우 페이지로
+    document.querySelectorAll('a[href*="/actress/"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = this.href;
+        });
+    });
+});
+
+function toggleFavorite(workId, button) {
+    fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_id: workId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            button.classList.add('favorited');
+        }
+    })
+    .catch(() => {
+        fetch('/api/favorites', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ work_id: workId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                button.classList.remove('favorited');
+            }
+        });
+    });
+}
+
+function toggleActressFavorite() {
+    alert('배우 팬 기능은 향후 업데이트될 예정입니다.');
+}
+
+function showPopularWorks(works) {
+    const container = document.getElementById('popularWorks');
+    const popular = works
+        .sort((a, b) => b.view_count - a.view_count)
+        .slice(0, 6);
+
+    if (popular.length > 0) {
+        container.innerHTML = popular.map(w => `
+            <div class="work-card" data-work-id="${w.id}">
+                <div class="work-image">🎬</div>
+                <div class="work-info">
+                    <h3 class="work-code">${w.code}</h3>
+                    <p class="work-title">${w.title}</p>
+                    ${w.rating > 0 ? `<div class="work-rating"><span class="stars">⭐ ${w.rating}</span></div>` : ''}
+                    <p class="work-views">👁️ ${w.view_count.toLocaleString()}</p>
+                    <a href="/work/${w.id}" class="btn-view">상세보기</a>
+                </div>
+            </div>
+        `).join('');
+
+        // 카드 클릭 이벤트
+        document.querySelectorAll('#popularWorks .work-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.closest('.btn-view')) return;
+                window.location.href = `/work/${this.dataset.workId}`;
+            });
+        });
+    } else {
+        container.innerHTML = '<div class="placeholder">인기 작품이 없습니다</div>';
+    }
+}
+
+function loadRecommendedActresses() {
+    fetch('/api/stats')
+        .then(r => r.json())
+        .then(stats => {
+            const container = document.getElementById('recommendedActresses');
+            const actressCount = stats.actresses;
+
+            // 랜덤 배우 선택 (현재 배우 제외)
+            const actresses = [];
+            for (let i = 1; i <= actressCount; i++) {
+                if (i !== {{ actress.id }}) {
+                    actresses.push(i);
+                }
+            }
+
+            if (actresses.length === 0) {
+                container.innerHTML = '<div class="placeholder">추천 배우가 없습니다</div>';
+                return;
+            }
+
+            // 랜덤 6명 선택
+            const recommended = actresses
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 6);
+
+            fetch(`/api/actresses/list?ids=${recommended.join(',')}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.actresses && data.actresses.length > 0) {
+                        container.innerHTML = data.actresses.map(a => `
+                            <div class="actress-card">
+                                <div class="actress-image">
+                                    ${a.image_url ? `<img src="${a.image_url}" alt="${a.kr_name}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">` : '👩'}
+                                </div>
+                                <div class="actress-info">
+                                    <h3><a href="/actress/${a.id}">${a.kr_name}</a></h3>
+                                    <p class="text-muted">${a.en_name}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                });
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,592 @@
+{% extends "base.html" %}
+
+{% block title %}검색: {{ query }} - 품번기{% endblock %}
+
+{% block content %}
+<div class="search-results-header">
+    <h1>검색 결과</h1>
+    <p class="search-query">
+        {% if query %}
+            "<strong>{{ query }}</strong>"의 검색 결과
+        {% else %}
+            검색어를 입력해주세요
+        {% endif %}
+    </p>
+
+    <!-- 검색 필터 -->
+    <div class="search-filters">
+        <button class="filter-btn active" data-type="all">전체</button>
+        <button class="filter-btn" data-type="actress">배우</button>
+        <button class="filter-btn" data-type="work">작품</button>
+    </div>
+</div>
+
+<!-- 결과 컨테이너 -->
+<div class="search-results-container">
+    <!-- 배우 결과 -->
+    <section class="results-section" id="actressResults">
+        <div class="section-header">
+            <h2>👩 배우 (<span id="actressCount">0</span>명)</h2>
+        </div>
+        <div id="actressList" class="grid-container">
+            <div class="placeholder">검색 중...</div>
+        </div>
+    </section>
+
+    <!-- 작품 결과 -->
+    <section class="results-section" id="workResults">
+        <div class="section-header">
+            <h2>🎬 작품 (<span id="workCount">0</span>개)</h2>
+        </div>
+        <div id="workList" class="grid-container">
+            <div class="placeholder">검색 중...</div>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div id="pagination" class="pagination" style="display: none;">
+            <button class="page-btn" id="prevBtn">이전</button>
+            <span id="pageInfo"></span>
+            <button class="page-btn" id="nextBtn">다음</button>
+        </div>
+    </section>
+
+    <!-- 결과 없음 -->
+    <div id="noResults" class="no-results" style="display: none;">
+        <div class="no-results-content">
+            <p class="no-results-icon">🔍</p>
+            <h2>검색 결과가 없습니다</h2>
+            <p class="no-results-text">
+                다른 검색어를 시도해보세요.<br>
+                정확한 배우명이나 품번으로 검색하면 더 나은 결과를 얻을 수 있습니다.
+            </p>
+            <a href="/" class="btn btn-primary">홈으로</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 검색 결과 헤더 */
+.search-results-header {
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-light) 100%);
+    border: 2px solid var(--border-light);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.search-results-header h1 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.search-query {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.search-query strong {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* 검색 필터 */
+.search-filters {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.6rem 1.5rem;
+    border: 2px solid var(--border-light);
+    background: transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.3s;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* 결과 섹션 */
+.search-results-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.results-section {
+    margin-bottom: 3rem;
+}
+
+.results-section.hidden {
+    display: none;
+}
+
+.section-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary);
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+/* 그리드 */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+/* 배우 카드 */
+.actress-card {
+    background: var(--bg-white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+    border: 1px solid var(--border-light);
+    cursor: pointer;
+}
+
+.actress-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary);
+}
+
+.actress-card a {
+    text-decoration: none;
+}
+
+.actress-image {
+    height: 150px;
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--border-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+}
+
+.actress-info {
+    padding: 1rem;
+}
+
+.actress-info h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.3rem;
+}
+
+.actress-info p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0.2rem 0;
+}
+
+/* 작품 카드 */
+.work-card {
+    background: var(--bg-white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+    border: 1px solid var(--border-light);
+}
+
+.work-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary);
+}
+
+.work-image {
+    height: 150px;
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--border-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+}
+
+.work-info {
+    padding: 1rem;
+    position: relative;
+}
+
+.work-code {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.3rem;
+}
+
+.work-title {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.work-actress {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.work-rating {
+    margin-top: 0.5rem;
+}
+
+.stars {
+    font-size: 0.9rem;
+    color: var(--warning);
+}
+
+.btn-favorite {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255, 20, 147, 0.2);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-favorite:hover {
+    background: rgba(255, 20, 147, 0.4);
+    transform: scale(1.1);
+}
+
+.btn-favorite.favorited {
+    background: var(--danger);
+    color: white;
+}
+
+/* 페이지네이션 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.page-btn {
+    padding: 0.6rem 1.2rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+.page-btn:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+#pageInfo {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* 결과 없음 */
+.no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.no-results-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.no-results h2 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.no-results-text {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+/* 플레이스홀더 */
+.placeholder {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .search-results-header {
+        padding: 1.5rem;
+    }
+
+    .search-results-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .search-query {
+        font-size: 1rem;
+    }
+
+    .search-filters {
+        gap: 0.5rem;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .pagination {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentQuery = '{{ query }}';
+let currentType = '{{ search_type }}' || 'all';
+let currentPage = 1;
+const resultsPerPage = 12;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 필터 버튼 이벤트
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentType = this.dataset.type;
+            currentPage = 1;
+
+            // 버튼 상태 업데이트
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            // 섹션 표시/숨김
+            updateSectionsVisibility();
+
+            // 검색 실행
+            if (currentQuery) {
+                performSearch();
+            }
+        });
+    });
+
+    // 초기 검색 실행
+    if (currentQuery) {
+        performSearch();
+    } else {
+        document.getElementById('noResults').style.display = 'block';
+    }
+
+    // 페이지네이션 버튼
+    document.getElementById('prevBtn').addEventListener('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            performSearch();
+        }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', function() {
+        currentPage++;
+        performSearch();
+    });
+});
+
+function updateSectionsVisibility() {
+    const actressSection = document.getElementById('actressResults');
+    const workSection = document.getElementById('workResults');
+
+    if (currentType === 'all') {
+        actressSection.classList.remove('hidden');
+        workSection.classList.remove('hidden');
+    } else if (currentType === 'actress') {
+        actressSection.classList.remove('hidden');
+        workSection.classList.add('hidden');
+    } else if (currentType === 'work') {
+        actressSection.classList.add('hidden');
+        workSection.classList.remove('hidden');
+    }
+}
+
+function performSearch() {
+    const url = `/api/search?q=${encodeURIComponent(currentQuery)}&type=${currentType}&page=${currentPage}`;
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            displayResults(data);
+            updateSectionsVisibility();
+
+            // 결과 없음 표시
+            if (data.actresses.length === 0 && data.works.length === 0) {
+                document.getElementById('noResults').style.display = 'block';
+            } else {
+                document.getElementById('noResults').style.display = 'none';
+            }
+        });
+}
+
+function displayResults(data) {
+    // 배우 결과
+    const actressList = document.getElementById('actressList');
+    document.getElementById('actressCount').textContent = data.actresses.length;
+
+    if (data.actresses.length > 0) {
+        actressList.innerHTML = data.actresses.map(a => `
+            <div class="actress-card">
+                <a href="/actress/${a.id}" style="text-decoration: none; color: inherit;">
+                    <div class="actress-image">👩</div>
+                    <div class="actress-info">
+                        <h3>${a.kr_name}</h3>
+                        <p>${a.en_name}</p>
+                        <small>${a.jp_name}</small>
+                    </div>
+                </a>
+            </div>
+        `).join('');
+    } else {
+        actressList.innerHTML = '<div class="placeholder">검색된 배우가 없습니다</div>';
+    }
+
+    // 작품 결과
+    const workList = document.getElementById('workList');
+    document.getElementById('workCount').textContent = data.total;
+
+    if (data.works.length > 0) {
+        workList.innerHTML = data.works.map(w => `
+            <div class="work-card" data-work-id="${w.id}">
+                <a href="/work/${w.id}" style="text-decoration: none; color: inherit;">
+                    <div class="work-image">🎬</div>
+                </a>
+                <div class="work-info">
+                    <h3 class="work-code">${w.code}</h3>
+                    <p class="work-title">${w.title}</p>
+                    ${w.kr_name ? `<p class="work-actress">${w.kr_name}</p>` : ''}
+                    ${w.rating > 0 ? `<div class="work-rating"><span class="stars">⭐ ${w.rating}</span></div>` : ''}
+                    <button class="btn-favorite" title="찜하기">❤️</button>
+                </div>
+            </div>
+        `).join('');
+
+        // 찜하기 버튼 이벤트
+        document.querySelectorAll('#workList .btn-favorite').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const card = this.closest('.work-card');
+                const workId = card.dataset.workId;
+                toggleFavorite(workId, this);
+            });
+        });
+    } else {
+        workList.innerHTML = '<div class="placeholder">검색된 작품이 없습니다</div>';
+    }
+
+    // 페이지네이션
+    const totalPages = Math.ceil(data.total / resultsPerPage);
+    const paginationDiv = document.getElementById('pagination');
+
+    if (data.works.length > 0 && totalPages > 1) {
+        paginationDiv.style.display = 'flex';
+        document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+
+        document.getElementById('prevBtn').disabled = currentPage === 1;
+        document.getElementById('nextBtn').disabled = currentPage === totalPages;
+    } else {
+        paginationDiv.style.display = 'none';
+    }
+}
+
+function toggleFavorite(workId, button) {
+    fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_id: workId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            button.classList.add('favorited');
+        }
+    })
+    .catch(() => {
+        fetch('/api/favorites', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ work_id: workId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                button.classList.remove('favorited');
+            }
+        });
+    });
+}
+</script>
+{% endblock %}

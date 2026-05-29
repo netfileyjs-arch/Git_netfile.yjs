@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}페이지를 찾을 수 없습니다 - 품번기{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-content">
+        <div class="error-icon">❌</div>
+        <h1>페이지를 찾을 수 없습니다</h1>
+        <p class="error-code">404 Not Found</p>
+        <p class="error-message">요청한 페이지가 존재하지 않습니다.</p>
+
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">홈으로</a>
+            <button onclick="history.back()" class="btn btn-secondary">뒤로</button>
+        </div>
+
+        <div class="search-suggestion">
+            <h3>검색해보세요</h3>
+            <form onsubmit="performSearch(event)">
+                <input type="text" id="searchInput" placeholder="배우명 또는 품번..." required>
+                <button type="submit" class="btn btn-primary">검색</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 2rem;
+}
+
+.error-content {
+    text-align: center;
+    max-width: 500px;
+}
+
+.error-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+.error-content h1 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.error-code {
+    font-size: 1.3rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.btn-secondary {
+    background: var(--text-muted);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: var(--text-dark);
+}
+
+.search-suggestion {
+    background: var(--bg-white);
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+}
+
+.search-suggestion h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.search-suggestion form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-suggestion input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid var(--border-light);
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.search-suggestion input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
+}
+
+.search-suggestion .btn {
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .error-icon {
+        font-size: 3rem;
+    }
+
+    .error-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .search-suggestion form {
+        flex-direction: column;
+    }
+
+    .search-suggestion .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function performSearch(e) {
+    e.preventDefault();
+    const query = document.getElementById('searchInput').value.trim();
+    if (query) {
+        window.location.href = `/search?q=${encodeURIComponent(query)}`;
+    }
+}
+</script>
+{% endblock %}

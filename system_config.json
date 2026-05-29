@@ -1,0 +1,106 @@
+{
+  "project_name": "AV 웹 플랫폼 (poomki.net 스타일)",
+  "version": "1.0.0",
+  "created_date": "2026-05-29",
+  "last_updated": "2026-05-29 14:30 (완성 + 최종 배포)",
+  "status": "active",
+  "completion_level": "100% (All Features Complete & Tested)",
+
+  "technical_specs": {
+    "framework": "Flask",
+    "database": "SQLite",
+    "templating_engine": "Jinja2",
+    "language": "Python 3.12",
+    "encoding": "UTF-8"
+  },
+
+  "features": {
+    "database_initialized": true,
+    "actress_count": 20,
+    "actress_image_source": "DiceBear API (Avataaars)",
+    "search_functionality": true,
+    "favorites_system": true,
+    "detail_pages": {
+      "actress_detail": true,
+      "work_detail": true,
+      "search_results": true
+    }
+  },
+
+  "api_endpoints": {
+    "search": "/api/search",
+    "favorites": "/api/favorites",
+    "actresses": "/api/actresses",
+    "actress_works": "/api/actresses/<id>/works",
+    "actress_stats": "/api/actresses/<id>/stats",
+    "work_detail": "/api/works/<id>",
+    "works_by_label": "/api/works/by-label/<label>",
+    "actresses_list": "/api/actresses/list",
+    "stats": "/api/stats"
+  },
+
+  "image_configuration": {
+    "actress_images": {
+      "source": "DiceBear API",
+      "url_format": "https://api.dicebear.com/7.x/personas/png?seed={actress_name}&size=200",
+      "type": "PNG (Personas - 고품질 아바타)",
+      "fallback": "emoji (👩)"
+    }
+  },
+
+  "important_files": {
+    "app": "app.py",
+    "actress_db": "av_actress_db.py",
+    "templates": {
+      "base": "templates/base.html",
+      "actress_detail": "templates/actress_detail.html",
+      "work_detail": "templates/work_detail.html",
+      "search_results": "templates/search_results.html",
+      "index": "templates/index.html"
+    },
+    "database": "data/av_database.db"
+  },
+
+  "protection_status": "PROTECTED",
+  "protected_files": [
+    "system_config.json",
+    "app.py",
+    "av_actress_db.py",
+    "templates/actress_detail.html",
+    "templates/work_detail.html"
+  ],
+
+  "modification_policy": {
+    "description": "시스템 설정 및 핵심 파일은 CLAUDE.md의 보호 규칙을 따릅니다",
+    "modification_requires": "사용자의 명시적 승인 + CONFIRM-CHANGE-OK 코드",
+    "automatic_backup": true,
+    "integrity_check": "SHA256 해시 기반"
+  },
+
+  "recent_changes": [
+    {
+      "date": "2026-05-29",
+      "change": "이미지 URL을 Wikimedia Commons에서 DiceBear API로 변경",
+      "reason": "Wikimedia Commons URL 작동 불안정으로 인한 대체",
+      "files_affected": ["av_actress_db.py", "actress_detail.html"]
+    },
+    {
+      "date": "2026-05-29",
+      "change": "추천 배우 섹션 아바타에 실제 이미지 표시 기능 추가",
+      "reason": "아바타 부분에도 배우 사진 표시 요청",
+      "files_affected": ["actress_detail.html"]
+    },
+    {
+      "date": "2026-05-29",
+      "change": "데이터베이스 초기화로 새로운 이미지 URL 적용",
+      "reason": "이미지 URL 변경 후 데이터베이스 재초기화",
+      "files_affected": ["data/av_database.db"]
+    },
+    {
+      "date": "2026-05-29",
+      "change": "최종 버전: SVG → PNG 형식으로 변경 + 핵심 버그 수정",
+      "reason": "PNG 형식의 안정적 이미지 표시 + app.py actress_detail() 쿼리 수정 (image_url 추가)",
+      "files_affected": ["av_actress_db.py", "app.py", "system_config.json", "data/av_database.db"]
+    }
+  ]
+}

@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 메인 배너 -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>❤️ 일본 AV 여배우 사전 · 품번 검색</h1>
+        <p class="hero-subtitle">배우 이름, 품번으로 원하는 AV 정보를 한 번에 검색하세요</p>
+
+        <!-- 통계 -->
+        <div class="stats-box">
+            <div class="stat-item">
+                <span class="stat-value">{{ actress_count }}</span>
+                <span class="stat-label">배우</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ work_count }}</span>
+                <span class="stat-label">작품</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ rated_count }}</span>
+                <span class="stat-label">평가됨</span>
+            </div>
+        </div>
+
+        <!-- 대표 버튼 -->
+        <div class="hero-actions">
+            <button class="btn btn-primary" onclick="scrollToSection('actresses')">
+                👩 배우 검색
+            </button>
+            <button class="btn btn-success" onclick="scrollToSection('works')">
+                🎬 작품 검색
+            </button>
+            <button class="btn btn-heart" onclick="scrollToSection('favorites')">
+                ❤️ 찜 목록 보기
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- 배너 영역 -->
+<div class="banners-container">
+    <!-- 좌측 배너 -->
+    <div class="banner-slot banner-left" id="bannerLeft">
+        {% if left_banner %}
+        <a href="{{ left_banner.link_url or '#' }}" class="banner-link" target="_blank">
+            <img src="{{ left_banner.banner_url }}" alt="{{ left_banner.alt_text or '좌측 배너' }}" class="banner-image">
+        </a>
+        {% else %}
+        <div class="banner-placeholder">
+            <p>좌측 배너</p>
+            <small>300 × 500px</small>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 중앙 콘텐츠 -->
+    <div class="banner-center">
+        <!-- 최신 추가 작품 -->
+        <section class="section recent-works">
+            <h2>✨ 오늘의 신작 추가</h2>
+            <div class="grid-container">
+        {% for work in recent_works %}
+        <div class="work-card" data-work-id="{{ work.id }}">
+            <div class="work-image">
+                <div class="placeholder-image">🎬</div>
+            </div>
+            <div class="work-info">
+                <h3 class="work-code">{{ work.code }}</h3>
+                <p class="work-title">{{ work.title }}</p>
+                {% if work.kr_name %}
+                <p class="work-actress">{{ work.kr_name }}</p>
+                {% endif %}
+                {% if work.rating > 0 %}
+                <div class="work-rating">
+                    <span class="stars">⭐ {{ work.rating }}</span>
+                </div>
+                {% endif %}
+                <button class="btn-favorite" title="찜하기">❤️</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- 배우 섹션 -->
+<section class="section" id="actresses">
+    <h2>👩 배우 검색</h2>
+    <div id="actressSearchResults" class="grid-container">
+        {% if all_actresses %}
+            {% for actress in all_actresses %}
+            <div class="actress-card" onclick="window.location.href='/actress/{{ actress.id }}'">
+                <div class="actress-image">
+                    {% if actress.image_url %}
+                    <img src="{{ actress.image_url }}" alt="{{ actress.kr_name }}" 
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E👩%3C/text%3E%3C/svg%3E'">
+                    {% else %}
+                    <div style="width:100%; height:100%; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">👩</div>
+                    {% endif %}
+                </div>
+                <div class="actress-info">
+                    <h3>{{ actress.kr_name }}</h3>
+                    <p class="text-muted">{{ actress.en_name }}</p>
+                    <small>{{ actress.jp_name }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="placeholder">🔍 배우 이름을 검색해주세요</div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- 작품 섹션 -->
+<section class="section" id="works">
+    <h2>🎬 작품 검색</h2>
+    <div id="workSearchResults" class="grid-container">
+        {% if latest_works %}
+            {% for work in latest_works %}
+            <div class="work-card" data-work-id="{{ work.id }}" onclick="if(!event.target.closest('.btn-favorite')) window.location.href='/work/{{ work.id }}'">
+                <div class="work-image"><div class="placeholder-image">🎬</div></div>
+                <div class="work-info">
+                    <h3 class="work-code">{{ work.code }}</h3>
+                    <p class="work-title">{{ work.title }}</p>
+                    {% if work.kr_name %}
+                    <p class="work-actress">{{ work.kr_name }}</p>
+                    {% endif %}
+                    {% if work.rating > 0 %}
+                    <div class="work-rating">
+                        <span class="stars">⭐ {{ work.rating }}</span>
+                    </div>
+                    {% endif %}
+                    <button class="btn-favorite" title="찜하기">❤️</button>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="placeholder">🔍 품번 또는 제목을 검색해주세요</div>
+        {% endif %}
+    </div>
+</section>
+
+    <!-- 찜 목록 -->
+    <section class="section" id="favorites">
+        <h2>❤️ 찜 목록</h2>
+        <div id="favoritesList" class="grid-container">
+            <div class="placeholder">찜한 작품이 없습니다</div>
+        </div>
+    </section>
+        </div>
+
+    <!-- 우측 배너 -->
+    <div class="banner-slot banner-right" id="bannerRight">
+        {% if right_banner %}
+        <a href="{{ right_banner.link_url or '#' }}" class="banner-link" target="_blank">
+            <img src="{{ right_banner.banner_url }}" alt="{{ right_banner.alt_text or '우측 배너' }}" class="banner-image">
+        </a>
+        {% else %}
+        <div class="banner-placeholder">
+            <p>우측 배너</p>
+            <small>300 × 500px</small>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 초기화
+    loadFavorites();
+    updateFavoritesCount();
+
+    // 이벤트 리스너
+    document.getElementById('searchBtn').addEventListener('click', performSearch);
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') performSearch();
+    });
+
+    // 작품 카드 클릭 (상세 페이지로 이동)
+    document.querySelectorAll('.work-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-favorite')) return; // 찜 버튼 제외
+            const workId = this.dataset.workId;
+            window.location.href = `/work/${workId}`;
+        });
+    });
+
+    // 찜하기 버튼
+    document.querySelectorAll('.btn-favorite').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const card = this.closest('.work-card');
+            const workId = card.dataset.workId;
+            toggleFavorite(workId, this);
+        });
+    });
+});
+
+function performSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) return;
+
+    fetch(`/api/search?q=${encodeURIComponent(query)}&type=all`)
+        .then(r => r.json())
+        .then(data => {
+            displaySearchResults(data);
+            scrollToSection('actresses');
+        });
+}
+
+function displaySearchResults(data) {
+    // 배우 결과
+    const actressResults = document.getElementById('actressSearchResults');
+    if (data.actresses.length > 0) {
+        actressResults.innerHTML = data.actresses.map(a => `
+            <div class="actress-card">
+                <div class="actress-image">
+                    ${a.image_url ? `<img src="${a.image_url}" alt="${a.kr_name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E👩%3C/text%3E%3C/svg%3E'">` : '👩'}
+                </div>
+                <div class="actress-info">
+                    <h3>${a.kr_name}</h3>
+                    <p class="text-muted">${a.en_name}</p>
+                    <small>${a.jp_name}</small>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        actressResults.innerHTML = '<div class="placeholder">검색된 배우가 없습니다</div>';
+    }
+
+    // 작품 결과
+    const workResults = document.getElementById('workSearchResults');
+    if (data.works.length > 0) {
+        workResults.innerHTML = data.works.map(w => `
+            <div class="work-card" data-work-id="${w.id}">
+                <div class="work-image"><div class="placeholder-image">🎬</div></div>
+                <div class="work-info">
+                    <h3 class="work-code">${w.code}</h3>
+                    <p class="work-title">${w.title}</p>
+                    ${w.kr_name ? `<p class="work-actress">${w.kr_name}</p>` : ''}
+                    ${w.rating > 0 ? `<div class="work-rating"><span class="stars">⭐ ${w.rating}</span></div>` : ''}
+                    <button class="btn-favorite" title="찜하기">❤️</button>
+                </div>
+            </div>
+        `).join('');
+
+        // 찜하기 버튼 이벤트 재등록
+        document.querySelectorAll('#workSearchResults .btn-favorite').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const card = this.closest('.work-card');
+                const workId = card.dataset.workId;
+                toggleFavorite(workId, this);
+            });
+        });
+    } else {
+        workResults.innerHTML = '<div class="placeholder">검색된 작품이 없습니다</div>';
+    }
+}
+
+function toggleFavorite(workId, button) {
+    fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_id: workId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            button.classList.add('favorited');
+            loadFavorites();
+            updateFavoritesCount();
+        }
+    })
+    .catch(() => {
+        // 이미 찜되어있음 - 삭제하기
+        fetch('/api/favorites', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ work_id: workId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                button.classList.remove('favorited');
+                loadFavorites();
+                updateFavoritesCount();
+            }
+        });
+    });
+}
+
+function loadFavorites() {
+    fetch('/api/favorites')
+        .then(r => r.json())
+        .then(favorites => {
+            const favoritesList = document.getElementById('favoritesList');
+            if (favorites.length > 0) {
+                favoritesList.innerHTML = favorites.map(w => `
+                    <div class="work-card" data-work-id="${w.id}">
+                        <div class="work-image"><div class="placeholder-image">🎬</div></div>
+                        <div class="work-info">
+                            <h3 class="work-code">${w.code}</h3>
+                            <p class="work-title">${w.title}</p>
+                            ${w.kr_name ? `<p class="work-actress">${w.kr_name}</p>` : ''}
+                            ${w.rating > 0 ? `<div class="work-rating"><span class="stars">⭐ ${w.rating}</span></div>` : ''}
+                            <button class="btn-favorite favorited" title="찜 제거">❤️</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // 찜 제거 버튼
+                document.querySelectorAll('#favoritesList .btn-favorite').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const card = this.closest('.work-card');
+                        const workId = card.dataset.workId;
+                        removeFavorite(workId);
+                    });
+                });
+            } else {
+                favoritesList.innerHTML = '<div class="placeholder">찜한 작품이 없습니다</div>';
+            }
+        });
+}
+
+function removeFavorite(workId) {
+    fetch('/api/favorites', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_id: workId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            loadFavorites();
+            updateFavoritesCount();
+        }
+    });
+}
+
+function updateFavoritesCount() {
+    fetch('/api/favorites')
+        .then(r => r.json())
+        .then(favorites => {
+            document.querySelector('.favorites-count').textContent = favorites.length;
+        });
+}
+
+function scrollToSection(sectionId) {
+    const element = document.getElementById(sectionId);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+</script>
+{% endblock %}

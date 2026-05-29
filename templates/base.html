@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}품번기 - AV 배우·품번 검색{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="/">
+                    <span class="logo-text">품번기</span>
+                    <span class="logo-subtitle">AV 배우·품번 검색</span>
+                </a>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="배우명 또는 품번 검색..."
+                       autocomplete="off">
+                <button type="button" id="searchBtn">🔍</button>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="/" class="nav-item">홈</a>
+                <a href="#actresses" class="nav-item">배우</a>
+                <a href="#works" class="nav-item">작품</a>
+                <a href="#favorites" class="nav-item favorites-link">
+                    ❤️ 찜 목록 <span class="favorites-count">0</span>
+                </a>
+            </nav>
+
+            <div class="header-actions">
+                <button class="theme-toggle" title="다크 모드">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 품번기. All rights reserved.</p>
+            <p class="disclaimer">이 사이트는 공개 정보를 기반으로 합니다.</p>
+        </div>
+    </footer>
+
+    <!-- 모달 -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // 헤더 검색 기능
+        document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                if (query) {
+                    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+
+        document.getElementById('searchBtn')?.addEventListener('click', function() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `/search?q=${encodeURIComponent(query)}`;
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 배우 이미지 관리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-header p {
+            opacity: 0.9;
+        }
+
+        .actresses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .actress-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .actress-card:hover {
+            box-shadow: 0 4px 16px rgba(255, 20, 147, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .actress-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .actress-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .actress-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .actress-info h3 {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .actress-info p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-family: monospace;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff1493;
+            box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
+        }
+
+        .current-image {
+            margin-bottom: 1rem;
+        }
+
+        .current-image label {
+            font-size: 0.85rem;
+            color: #666;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 5px;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-url {
+            font-size: 0.75rem;
+            color: #999;
+            word-break: break-all;
+            padding: 0.5rem;
+            background: #fafafa;
+            border-radius: 3px;
+            max-height: 60px;
+            overflow-y: auto;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #ff1493;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ff0080;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .status-message {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 3px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .actresses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 헤더 -->
+        <div class="admin-header">
+            <h1>🖼️ 배우 이미지 관리</h1>
+            <p>localhost에서만 접근 가능합니다 (PC 로컬만)</p>
+        </div>
+
+        <!-- 정보 -->
+        <div class="info-box">
+            <strong>📝 사용 방법:</strong>
+            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                <li>각 배우의 이미지 URL을 입력하세요</li>
+                <li>Unsplash, Pexels, Pixabay 등에서 이미지 URL을 복사해서 붙여넣기</li>
+                <li>저장을 누르면 즉시 반영됩니다</li>
+            </ul>
+        </div>
+
+        <!-- 탭 메뉴 -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #ff1493; flex-wrap: wrap;">
+            <button class="tab-btn active" onclick="switchTab('actresses')" style="padding: 0.7rem 1.5rem; border: none; background: none; color: #333; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; padding-bottom: calc(0.7rem - 3px);">👩 배우 이미지 관리</button>
+            <button class="tab-btn" onclick="switchTab('works')" style="padding: 0.7rem 1.5rem; border: none; background: none; color: #999; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; padding-bottom: calc(0.7rem - 3px);">🎬 작품 코드/이미지 관리</button>
+            <button class="tab-btn" onclick="switchTab('banners')" style="padding: 0.7rem 1.5rem; border: none; background: none; color: #999; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; padding-bottom: calc(0.7rem - 3px);">📊 배너 관리</button>
+        </div>
+
+        <!-- 배우 목록 -->
+        <div id="actresses-tab" class="tab-content">
+        <div class="actresses-grid">
+            {% for actress in actresses %}
+            <div class="actress-card">
+                <!-- 배우 정보 -->
+                <div class="actress-header">
+                    <div class="actress-avatar">
+                        {% if actress.image_url %}
+                        <img src="{{ actress.image_url }}" alt="{{ actress.kr_name }}" id="preview-{{ actress.id }}">
+                        {% else %}
+                        <div style="width:100%; height:100%; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">👩</div>
+                        {% endif %}
+                    </div>
+                    <div class="actress-info">
+                        <h3>{{ actress.kr_name }}</h3>
+                        <p>{{ actress.en_name }}</p>
+                    </div>
+                </div>
+
+                <!-- 현재 이미지 -->
+                <div class="current-image">
+                    <label>현재 이미지:</label>
+                    <div class="image-preview">
+                        {% if actress.image_url %}
+                        <img src="{{ actress.image_url }}" alt="{{ actress.kr_name }}" id="fullpreview-{{ actress.id }}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E❌ 로드 실패%3C/text%3E%3C/svg%3E'">
+                        {% else %}
+                        <div style="color:#999;">이미지 없음</div>
+                        {% endif %}
+                    </div>
+                    {% if actress.image_url %}
+                    <div class="image-url" title="{{ actress.image_url }}">{{ actress.image_url }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- 입력 폼 -->
+                <div class="form-group">
+                    <label>새 이미지 URL:</label>
+                    <input
+                        type="url"
+                        class="url-input"
+                        id="input-{{ actress.id }}"
+                        placeholder="https://example.com/image.jpg"
+                        value="{{ actress.image_url or '' }}"
+                    >
+                </div>
+
+                <!-- 버튼 -->
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="updateImage({{ actress.id }})">저장</button>
+                    <button class="btn btn-secondary" onclick="resetImage({{ actress.id }})">초기화</button>
+                </div>
+
+                <div class="status-message" id="status-{{ actress.id }}"></div>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
+        </div>
+
+        <!-- 작품 코드/이미지 관리 탭 -->
+        <div id="works-tab" class="tab-content" style="display: none;">
+            <div class="info-box">
+                <strong>📝 사용 방법:</strong>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>품번(코드): ABP-001, SSIS-100 등 형식</li>
+                    <li>이미지: Unsplash, Pexels 등에서 이미지 URL 복사</li>
+                    <li>저장을 누르면 즉시 반영됩니다</li>
+                </ul>
+            </div>
+
+            <div class="actresses-grid" style="grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));">
+                {% if works %}
+                {% for work in works %}
+                <div class="actress-card">
+                    <!-- 작품 정보 -->
+                    <div class="actress-header">
+                        <div class="actress-avatar" style="width: 80px; height: 80px;">
+                            {% if work.image_url %}
+                            <img src="{{ work.image_url }}" alt="{{ work.code }}" id="preview-work-{{ work.id }}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E🎬%3C/text%3E%3C/svg%3E'">
+                            {% else %}
+                            <div style="width:100%; height:100%; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">🎬</div>
+                            {% endif %}
+                        </div>
+                        <div class="actress-info">
+                            <h3>{{ work.code }}</h3>
+                            <p style="font-size: 0.85rem; color: #666;">{{ work.title }}</p>
+                        </div>
+                    </div>
+
+                    <!-- 현재 이미지 -->
+                    <div class="current-image">
+                        <label>현재 이미지:</label>
+                        <div class="image-preview">
+                            {% if work.image_url %}
+                            <img src="{{ work.image_url }}" alt="{{ work.code }}" id="fullpreview-work-{{ work.id }}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E❌ 로드 실패%3C/text%3E%3C/svg%3E'">
+                            {% else %}
+                            <div style="color:#999;">이미지 없음</div>
+                            {% endif %}
+                        </div>
+                        {% if work.image_url %}
+                        <div class="image-url" title="{{ work.image_url }}">{{ work.image_url }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 품번 수정 -->
+                    <div class="form-group">
+                        <label>품번:</label>
+                        <input
+                            type="text"
+                            id="code-{{ work.id }}"
+                            placeholder="예: ABP-001"
+                            value="{{ work.code }}"
+                            style="text-transform: uppercase;"
+                        >
+                    </div>
+
+                    <!-- 이미지 URL 입력 -->
+                    <div class="form-group">
+                        <label>이미지 URL:</label>
+                        <input
+                            type="url"
+                            class="url-input"
+                            id="image-{{ work.id }}"
+                            placeholder="https://example.com/image.jpg"
+                            value="{{ work.image_url or '' }}"
+                        >
+                    </div>
+
+                    <!-- 버튼 -->
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="updateWorkInfo({{ work.id }})">저장</button>
+                        <button class="btn btn-secondary" onclick="resetWorkInfo({{ work.id }})">초기화</button>
+                    </div>
+
+                    <div class="status-message" id="work-status-{{ work.id }}"></div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="placeholder" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                    <p>작품 데이터가 없습니다</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        </div>
+
+        <!-- 배너 관리 탭 -->
+        <div id="banners-tab" class="tab-content" style="display: none;">
+            <div class="info-box">
+                <strong>📊 배너 관리:</strong>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>좌측/우측 배너 이미지 URL 입력</li>
+                    <li>배너 클릭 시 이동할 링크 설정</li>
+                    <li>이미지 크기: 300 × 500px 권장</li>
+                </ul>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 1000px;">
+                <!-- 좌측 배너 -->
+                <div class="actress-card">
+                    <h3 style="text-align: center; margin-bottom: 1rem;">⬅️ 좌측 배너 (300×500px)</h3>
+                    
+                    <div class="current-image">
+                        <label>현재 배너:</label>
+                        <div class="image-preview" style="height: 300px;">
+                            {% if left_banner and left_banner.banner_url %}
+                            <img src="{{ left_banner.banner_url }}" alt="좌측 배너" id="preview-left-banner" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <div style="color:#999;">배너 없음</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>배너 이미지 URL:</label>
+                        <input type="url" id="left-banner-url" placeholder="https://example.com/image.jpg" 
+                               value="{{ left_banner.banner_url or '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>링크 주소:</label>
+                        <input type="url" id="left-banner-link" placeholder="https://example.com" 
+                               value="{{ left_banner.link_url or '' }}">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="updateBanner('left')">저장</button>
+                        <button class="btn btn-secondary" onclick="resetBanner('left')">초기화</button>
+                    </div>
+                    <div class="status-message" id="left-banner-status"></div>
+                </div>
+
+                <!-- 우측 배너 -->
+                <div class="actress-card">
+                    <h3 style="text-align: center; margin-bottom: 1rem;">➡️ 우측 배너 (300×500px)</h3>
+                    
+                    <div class="current-image">
+                        <label>현재 배너:</label>
+                        <div class="image-preview" style="height: 300px;">
+                            {% if right_banner and right_banner.banner_url %}
+                            <img src="{{ right_banner.banner_url }}" alt="우측 배너" id="preview-right-banner" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <div style="color:#999;">배너 없음</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>배너 이미지 URL:</label>
+                        <input type="url" id="right-banner-url" placeholder="https://example.com/image.jpg" 
+                               value="{{ right_banner.banner_url or '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>링크 주소:</label>
+                        <input type="url" id="right-banner-link" placeholder="https://example.com" 
+                               value="{{ right_banner.link_url or '' }}">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="updateBanner('right')">저장</button>
+                        <button class="btn btn-secondary" onclick="resetBanner('right')">초기화</button>
+                    </div>
+                    <div class="status-message" id="right-banner-status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateImage(actressId) {
+            const urlInput = document.getElementById(`input-${actressId}`);
+            const imageUrl = urlInput.value.trim();
+            const statusEl = document.getElementById(`status-${actressId}`);
+
+            if (!imageUrl) {
+                showStatus(statusEl, '❌ URL을 입력하세요', 'error');
+                return;
+            }
+
+            // URL 유효성 확인
+            try {
+                new URL(imageUrl);
+            } catch {
+                showStatus(statusEl, '❌ 유효하지 않은 URL입니다', 'error');
+                return;
+            }
+
+            // 저장
+            fetch('/api/admin/update-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    actress_id: actressId,
+                    image_url: imageUrl
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus(statusEl, '✅ 저장되었습니다!', 'success');
+                    // 이미지 미리보기 업데이트
+                    const img1 = document.getElementById(`preview-${actressId}`);
+                    const img2 = document.getElementById(`fullpreview-${actressId}`);
+                    if (img1) img1.src = imageUrl;
+                    if (img2) img2.src = imageUrl;
+
+                    // 3초 후 상태 메시지 숨기기
+                    setTimeout(() => statusEl.style.display = 'none', 3000);
+                } else {
+                    showStatus(statusEl, '❌ 저장 실패', 'error');
+                }
+            })
+            .catch(err => {
+                showStatus(statusEl, '❌ 오류: ' + err.message, 'error');
+            });
+        }
+
+        function resetImage(actressId) {
+            const urlInput = document.getElementById(`input-${actressId}`);
+            urlInput.value = '';
+            document.getElementById(`status-${actressId}`).style.display = 'none';
+        }
+
+        function showStatus(el, message, type) {
+            el.textContent = message;
+            el.className = `status-message ${type}`;
+        }
+
+        // 탭 전환 함수
+        function switchTab(tabName) {
+            // 모든 탭 숨기기
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            // 모든 탭 버튼 비활성화
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.color = '#999';
+                btn.style.borderBottomColor = 'transparent';
+            });
+
+            // 선택된 탭만 표시
+            document.getElementById(`${tabName}-tab`).style.display = 'block';
+
+            // 선택된 버튼 활성화
+            event.target.classList.add('active');
+            event.target.style.color = '#333';
+            event.target.style.borderBottomColor = '#ff1493';
+        }
+
+        // 작품 정보 업데이트 함수 (품번 + 이미지)
+        function updateWorkInfo(workId) {
+            const codeInput = document.getElementById(`code-${workId}`);
+            const imageInput = document.getElementById(`image-${workId}`);
+            const newCode = codeInput.value.trim().toUpperCase();
+            const newImage = imageInput.value.trim();
+            const statusEl = document.getElementById(`work-status-${workId}`);
+
+            if (!newCode && !newImage) {
+                showStatus(statusEl, '❌ 품번 또는 이미지를 입력하세요', 'error');
+                return;
+            }
+
+            // 품번 형식 확인 (ABC-001 형식)
+            if (newCode && !/^[A-Z]{1,4}-\d{3,4}$/.test(newCode)) {
+                showStatus(statusEl, '❌ 형식: ABC-001 (문자-숫자)', 'error');
+                return;
+            }
+
+            // 이미지 URL 유효성 확인
+            if (newImage) {
+                try {
+                    new URL(newImage);
+                } catch {
+                    showStatus(statusEl, '❌ 유효하지 않은 URL입니다', 'error');
+                    return;
+                }
+            }
+
+            // 저장
+            fetch('/api/admin/update-work', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    work_id: workId,
+                    code: newCode || null,
+                    image_url: newImage || null
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus(statusEl, '✅ 저장되었습니다!', 'success');
+                    
+                    // 이미지 미리보기 업데이트
+                    if (newImage) {
+                        const img1 = document.getElementById(`preview-work-${workId}`);
+                        const img2 = document.getElementById(`fullpreview-work-${workId}`);
+                        if (img1) img1.src = newImage;
+                        if (img2) img2.src = newImage;
+                    }
+
+                    setTimeout(() => statusEl.style.display = 'none', 3000);
+                } else {
+                    showStatus(statusEl, '❌ 저장 실패: ' + (data.error || '알 수 없는 오류'), 'error');
+                }
+            })
+            .catch(err => {
+                showStatus(statusEl, '❌ 오류: ' + err.message, 'error');
+            });
+        }
+
+        // 작품 정보 초기화 함수
+        function resetWorkInfo(workId) {
+            location.reload();
+        }
+
+        // 배너 업데이트 함수
+        function updateBanner(position) {
+            const urlInput = document.getElementById(`${position}-banner-url`);
+            const linkInput = document.getElementById(`${position}-banner-link`);
+            const bannerUrl = urlInput.value.trim();
+            const linkUrl = linkInput.value.trim();
+            const statusEl = document.getElementById(`${position}-banner-status`);
+
+            if (!bannerUrl) {
+                showStatus(statusEl, '❌ 배너 이미지 URL을 입력하세요', 'error');
+                return;
+            }
+
+            // URL 유효성 확인
+            try {
+                new URL(bannerUrl);
+                if (linkUrl) new URL(linkUrl);
+            } catch {
+                showStatus(statusEl, '❌ 유효하지 않은 URL입니다', 'error');
+                return;
+            }
+
+            // 저장
+            fetch('/api/admin/update-banner', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    banner_type: position,
+                    banner_url: bannerUrl,
+                    link_url: linkUrl || null,
+                    alt_text: `${position === 'left' ? '좌측' : '우측'} 배너`
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus(statusEl, '✅ 저장되었습니다!', 'success');
+                    
+                    // 미리보기 업데이트
+                    const previewImg = document.getElementById(`preview-${position}-banner`);
+                    if (previewImg) {
+                        previewImg.src = bannerUrl;
+                    }
+
+                    setTimeout(() => statusEl.style.display = 'none', 3000);
+                } else {
+                    showStatus(statusEl, '❌ 저장 실패: ' + (data.error || '알 수 없는 오류'), 'error');
+                }
+            })
+            .catch(err => {
+                showStatus(statusEl, '❌ 오류: ' + err.message, 'error');
+            });
+        }
+
+        // 배너 초기화 함수
+        function resetBanner(position) {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
