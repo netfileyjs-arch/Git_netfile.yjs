@@ -70,3 +70,6 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+
+# HeyGen 생성 영상
+marketing/heygen/output/
