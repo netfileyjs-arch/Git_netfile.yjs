@@ -1,6 +1,6 @@
 """대한민국 뉴스 키워드 알림.
 
-config.json 에 적은 키워드가 들어간 최근 뉴스를 Google 뉴스(한국판) RSS 에서 찾아
+config.json 에 적은 키워드가 들어간 최근 뉴스를 Google 뉴스(한국판, 언론사 기사만) RSS 에서 찾아
 PC 알림(토스트)으로 제목을 보여주고, 전체 목록은 report.html 로 저장합니다.
 API 키가 필요 없습니다. 매일 아침 9시 실행은 install_windows_task.ps1 로 등록하세요.
 
@@ -98,8 +98,10 @@ def collect(config, seen):
         except Exception as e:  # 한 검색이 실패해도 나머지는 계속
             log(f"'{label}' 검색 실패: {e}")
             continue
-        # 실제 제목에 키워드가 (모두) 들어간 기사만 남김
-        items = [i for i in items if all(k.lower() in i["title"].lower() for k in group)]
+        # "content": Google 뉴스 검색 결과(본문 포함 매칭)를 그대로 사용
+        # "title": 실제 제목에 키워드가 (모두) 들어간 기사만 남김
+        if config.get("search_in", "content") == "title":
+            items = [i for i in items if all(k.lower() in i["title"].lower() for k in group)]
         if config.get("skip_already_notified", True):
             items = [i for i in items if i["link"] not in seen]
         items.sort(key=lambda i: i["published"] or datetime.min.astimezone(), reverse=True)
