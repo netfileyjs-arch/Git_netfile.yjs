@@ -1,5 +1,6 @@
 {
   "keywords": ["반도체", "삼성전자"],
+  "match": "all",
   "lookback": "1d",
   "max_titles_in_popup": 5,
   "max_items_per_keyword": 20,

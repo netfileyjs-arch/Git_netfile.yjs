@@ -45,10 +45,10 @@ def load_json(path, default):
         return json.load(f)
 
 
-def fetch_rss(keyword, lookback):
+def fetch_rss(keywords, lookback):
     # 띄어쓰기가 있는 키워드는 따옴표로 묶어 정확히 일치하는 문구로 검색
-    term = f'"{keyword}"' if " " in keyword else keyword
-    query = urllib.parse.quote(f"{term} when:{lookback}")
+    terms = " ".join(f'"{k}"' if " " in k else k for k in keywords)
+    query = urllib.parse.quote(f"{terms} when:{lookback}")
     request = urllib.request.Request(
         RSS_URL.format(query=query), headers={"User-Agent": "Mozilla/5.0"}
     )
@@ -83,21 +83,29 @@ def parse_items(rss_bytes):
 
 
 def collect(config, seen):
+    keywords = config["keywords"]
+    # "all": 모든 키워드가 제목에 함께 들어간 기사만 / "any": 키워드별로 따로 검색
+    if config.get("match", "all") == "all":
+        groups = [keywords]
+    else:
+        groups = [[k] for k in keywords]
+
     results = {}
-    for keyword in config["keywords"]:
+    for group in groups:
+        label = " + ".join(group)
         try:
-            items = parse_items(fetch_rss(keyword, config.get("lookback", "1d")))
-        except Exception as e:  # 한 키워드가 실패해도 나머지는 계속
-            log(f"'{keyword}' 검색 실패: {e}")
+            items = parse_items(fetch_rss(group, config.get("lookback", "1d")))
+        except Exception as e:  # 한 검색이 실패해도 나머지는 계속
+            log(f"'{label}' 검색 실패: {e}")
             continue
-        # 실제 제목에 키워드가 들어간 기사만 남김
-        items = [i for i in items if keyword.lower() in i["title"].lower()]
+        # 실제 제목에 키워드가 (모두) 들어간 기사만 남김
+        items = [i for i in items if all(k.lower() in i["title"].lower() for k in group)]
         if config.get("skip_already_notified", True):
             items = [i for i in items if i["link"] not in seen]
         items.sort(key=lambda i: i["published"] or datetime.min.astimezone(), reverse=True)
         items = items[: config.get("max_items_per_keyword", 20)]
         if items:
-            results[keyword] = items
+            results[label] = items
     return results
 
 
@@ -151,7 +159,7 @@ def main():
     seen = set(load_json(SEEN_PATH, []))
     results = collect(config, seen)
     total = sum(len(items) for items in results.values())
-    log(f"키워드 {config['keywords']} → 새 기사 {total}건")
+    log(f"키워드 {config['keywords']} ({config.get('match', 'all')}) → 새 기사 {total}건")
 
     if total == 0:
         if args.test:
