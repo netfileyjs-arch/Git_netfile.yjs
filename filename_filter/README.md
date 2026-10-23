@@ -7,7 +7,9 @@
 
 | 파일 | 설명 |
 |---|---|
-| `web_app.py` | 웹 페이지 (http://localhost:5050) |
+| `파일명_키워드_필터.html` | **단독 실행 웹페이지** — 더블클릭으로 바로 사용 |
+| `standalone_template.html`, `build_standalone.py` | 위 HTML 을 다시 만드는 원본과 스크립트 |
+| `web_app.py` | 웹 서버판 (http://localhost:5050) |
 | `filter_files.py` | 명령줄 프로그램 |
 | `filter_core.py` | 검색·번역·엑셀 저장 로직 (웹/명령줄 공용) |
 | `dictionary.txt` | 한글 ↔ 영문 번역 사전 (직접 수정 가능) |
@@ -15,13 +17,28 @@
 | `filenames.txt` | 예시 파일명 목록 |
 | `키워드_필터_결과.xlsx` | 예시 목록을 돌린 결과 |
 
-## 설치
+## 가장 쉬운 방법: HTML 파일 하나로 사용 (설치 필요 없음)
+
+`파일명_키워드_필터.html` 을 내려받아 **더블클릭**하면 브라우저(크롬/엣지/웨일 등)에서 바로 열립니다.
+
+- Python, 인터넷 연결 모두 필요 없음. 검색과 엑셀 생성까지 전부 브라우저 안에서 처리
+- 파일명/키워드를 어디로도 전송하지 않음
+- 입력한 키워드와 편집한 사전은 그 브라우저에 기억됨
+- 사전을 다른 PC로 옮길 때는 "사전 파일로 내보내기" → 다른 PC에서 "사전 파일 불러오기"
+
+`dictionary.txt` 나 `keywords.txt` 의 기본값을 바꾼 뒤 HTML 에 반영하려면:
+
+```bash
+python build_standalone.py
+```
+
+## 설치 (아래 웹 서버판/명령줄판을 쓸 때만)
 
 ```bash
 pip install flask openpyxl
 ```
 
-## 웹 페이지로 사용
+## 웹 서버판으로 사용
 
 ```bash
 cd filename_filter
