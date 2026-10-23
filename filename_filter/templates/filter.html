@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>파일명 키워드 필터</title>
+<style>
+:root {
+  --bg: #f5f6f8; --panel: #ffffff; --text: #1f2328; --muted: #656d76; --border: #d0d7de;
+  --accent: #305496; --accent-text: #ffffff; --hit: #fff1c2; --danger: #c62828; --row: #f8f9fb;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --panel: #161b22; --text: #e6edf3; --muted: #8d96a0; --border: #30363d;
+    --accent: #4c7bd9; --accent-text: #ffffff; --hit: #4d3d00; --danger: #ff6b6b; --row: #1c222b;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.5 -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+header { padding: 16px; background: var(--accent); color: var(--accent-text); }
+header h1 { margin: 0; font-size: 20px; }
+header p { margin: 4px 0 0; opacity: .85; font-size: 13px; }
+main { max-width: 1280px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; min-width: 0; }
+.panel h2 { margin: 0 0 8px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.count { color: var(--muted); font-weight: normal; font-size: 13px; }
+textarea { width: 100%; min-height: 220px; resize: vertical; padding: 8px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--bg); color: var(--text); font: 12px/1.45 Consolas, "D2Coding", monospace; }
+.drop { border: 2px dashed var(--border); border-radius: 6px; padding: 10px; text-align: center; color: var(--muted);
+  margin-bottom: 8px; font-size: 13px; }
+.drop.over { border-color: var(--accent); color: var(--text); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+button, .btn { border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 6px;
+  padding: 6px 12px; cursor: pointer; font: inherit; font-size: 13px; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .5; cursor: default; }
+input[type=file] { display: none; }
+input[type=search] { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg);
+  color: var(--text); font: inherit; min-width: 0; flex: 1; }
+label.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
+.help { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 10px; flex-wrap: wrap; }
+.tabs button { border: none; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 8px 12px; }
+.tabs button.active { border-bottom-color: var(--accent); font-weight: 600; }
+.table-wrap { overflow: auto; max-height: 60vh; border: 1px solid var(--border); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { padding: 5px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { position: sticky; top: 0; background: var(--panel); z-index: 1; white-space: nowrap; }
+tr:nth-child(even) td { background: var(--row); }
+td.name { word-break: break-all; }
+td.num { text-align: right; color: var(--muted); white-space: nowrap; }
+tr.excluded td { opacity: .45; text-decoration: line-through; }
+mark { background: var(--hit); color: inherit; border-radius: 2px; }
+.tag { display: inline-block; padding: 0 6px; border-radius: 10px; font-size: 11px; border: 1px solid var(--border); white-space: nowrap; }
+.summary { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; font-size: 13px; }
+.summary b { font-size: 18px; }
+.hidden { display: none !important; }
+#status { color: var(--muted); font-size: 13px; }
+#status.error { color: var(--danger); }
+</style>
+</head>
+<body>
+<header>
+  <h1>파일명 키워드 필터</h1>
+  <p>키워드를 한글 ↔ 영문으로 서로 번역해서, 키워드가 들어간 파일명을 골라내고 엑셀로 저장합니다.</p>
+</header>
+<main>
+  <div class="grid">
+    <section class="panel">
+      <h2>1. 파일명 목록 <span class="count" id="fileCount">0개</span></h2>
+      <div class="drop" id="fileDrop">여기에 파일을 끌어다 놓으세요 — .txt 는 안의 목록을, 그 외 파일은 파일 이름을 추가합니다</div>
+      <textarea id="filenames" placeholder="한 줄에 파일명 하나씩 붙여넣기"></textarea>
+      <div class="row">
+        <label class="btn">목록 파일(.txt) 불러오기<input type="file" id="listFile" accept=".txt,.csv,.lst" multiple></label>
+        <label class="btn">파일 선택 (이름만)<input type="file" id="pickFiles" multiple></label>
+        <label class="btn">폴더 선택 (이름만)<input type="file" id="pickFolder" webkitdirectory multiple></label>
+        <button id="clearFiles">비우기</button>
+      </div>
+      <p class="help">파일 선택/폴더 선택은 파일 내용을 올리지 않고 이름만 읽습니다.</p>
+    </section>
+
+    <section class="panel">
+      <h2>2. 키워드 <span class="count" id="keywordCount">0개</span></h2>
+      <div class="drop" id="keywordDrop">키워드 .txt 파일을 끌어다 놓아도 됩니다</div>
+      <textarea id="keywords" placeholder="키워드1/키워드2/키워드3  (/, 줄바꿈, 쉼표로 구분)"></textarea>
+      <div class="row">
+        <label class="btn">키워드 파일 불러오기<input type="file" id="keywordFile" accept=".txt"></label>
+        <button id="defaultKeywords">기본 키워드 불러오기</button>
+        <label class="check"><input type="checkbox" id="translate" checked> 한글 ↔ 영문 번역해서 함께 검색</label>
+      </div>
+      <p class="help">영문 키워드 앞에 <code>=</code> 를 붙이면 단어 단위로만 찾습니다 (예: <code>=cum</code> 은 document 에 안 걸림).</p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="row" style="margin-top:0">
+      <button class="primary" id="run">키워드 포함 파일 골라내기</button>
+      <button id="export" disabled>엑셀 다운로드</button>
+      <button id="copyRemain" disabled>나머지 목록 복사</button>
+      <button id="toggleDict">번역 사전 편집</button>
+      <span id="status"></span>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="dictPanel">
+    <h2>번역 사전 <span class="count" id="dictCount"></span></h2>
+    <textarea id="dictionary" style="min-height:320px"></textarea>
+    <div class="row">
+      <button class="primary" id="saveDict">사전 저장</button>
+      <span class="help" style="margin:0">형식: <code>한글1, 한글2 = english1, english2</code> — 왼쪽 단어로 찾으면 오른쪽이, 오른쪽으로 찾으면 왼쪽이 함께 검색됩니다.</span>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="resultPanel">
+    <div class="summary" id="summary"></div>
+    <div class="tabs">
+      <button data-tab="matched" class="active">제거 대상</button>
+      <button data-tab="unmatched">나머지 파일</button>
+      <button data-tab="keywords">키워드 번역표</button>
+    </div>
+    <div class="row" style="margin:0 0 8px">
+      <input type="search" id="search" placeholder="결과 안에서 검색">
+      <span id="matchedTools">
+        <button id="checkAll">전체 선택</button>
+        <button id="uncheckAll">전체 해제</button>
+      </span>
+    </div>
+    <p class="help" id="matchedHelp" style="margin:0 0 8px">잘못 걸린 파일은 체크를 해제하세요. 체크 해제한 파일은 엑셀에서 "나머지 파일"로 들어갑니다.</p>
+    <div class="table-wrap"><table id="resultTable"></table></div>
+  </section>
+</main>
+
+<script>
+{% raw %}
+const $ = id => document.getElementById(id);
+const state = { result: null, excluded: new Set(), tab: 'matched', defaults: null };
+const LIST_EXT = /\.(txt|csv|lst)$/i;
+
+function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+function lines(text) { return text.split(/\r?\n/).map(s => s.trim()).filter(Boolean); }
+function keywordList(text) { return [...new Set(text.split(/[\/\n\r,;|]+/).map(s => s.trim().normalize('NFKC').toLowerCase()).filter(Boolean))]; }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function setStatus(text, error) { $('status').textContent = text; $('status').className = error ? 'error' : ''; }
+
+function updateCounts() {
+  $('fileCount').textContent = lines($('filenames').value).length + '개';
+  $('keywordCount').textContent = keywordList($('keywords').value).length + '개';
+}
+
+function appendFilenames(names) {
+  if (!names.length) return;
+  const current = $('filenames').value.replace(/\s+$/, '');
+  $('filenames').value = (current ? current + '\n' : '') + names.join('\n');
+  updateCounts();
+}
+
+function readText(file) {
+  return file.arrayBuffer().then(buf => {
+    const utf8 = new TextDecoder('utf-8', { fatal: false }).decode(buf);
+    // UTF-8 로 깨지면 한글 윈도우 인코딩(CP949)으로 다시 읽기
+    return utf8.includes('�') ? new TextDecoder('euc-kr').decode(buf) : utf8;
+  });
+}
+
+async function addFiles(files, readLists) {
+  const names = [];
+  for (const file of files) {
+    if (readLists && LIST_EXT.test(file.name)) names.push(...lines(await readText(file)));
+    else names.push(file.name);
+  }
+  appendFilenames(names);
+  setStatus(names.length + '개 파일명을 추가했습니다.');
+}
+
+function setupDrop(zone, onFiles) {
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); onFiles([...e.dataTransfer.files]); });
+}
+
+setupDrop($('fileDrop'), files => addFiles(files, true));
+setupDrop($('keywordDrop'), async files => {
+  for (const f of files) $('keywords').value += ($('keywords').value.trim() ? '/' : '') + (await readText(f)).trim();
+  saveKeywords();
+});
+$('listFile').onchange = e => { addFiles([...e.target.files], true); e.target.value = ''; };
+$('pickFiles').onchange = e => { addFiles([...e.target.files], false); e.target.value = ''; };
+$('pickFolder').onchange = e => { addFiles([...e.target.files], false); e.target.value = ''; };
+$('keywordFile').onchange = async e => {
+  const f = e.target.files[0];
+  if (f) { $('keywords').value = (await readText(f)).trim(); saveKeywords(); }
+  e.target.value = '';
+};
+$('clearFiles').onclick = () => { $('filenames').value = ''; updateCounts(); };
+$('filenames').addEventListener('input', updateCounts);
+
+function saveKeywords() { store('filter.keywords', $('keywords').value); updateCounts(); }
+$('keywords').addEventListener('input', saveKeywords);
+$('defaultKeywords').onclick = () => { $('keywords').value = state.defaults.keywords; saveKeywords(); };
+$('translate').onchange = () => store('filter.translate', $('translate').checked ? '1' : '0');
+
+function updateDictCount() {
+  const n = $('dictionary').value.split(/\r?\n/).filter(l => l.trim() && !l.trim().startsWith('#') && l.includes('=')).length;
+  $('dictCount').textContent = n + '줄';
+}
+$('toggleDict').onclick = () => $('dictPanel').classList.toggle('hidden');
+$('dictionary').addEventListener('input', updateDictCount);
+$('saveDict').onclick = async () => {
+  const res = await fetch('/api/dictionary', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dictionary: $('dictionary').value }) });
+  const data = await res.json();
+  setStatus(res.ok ? `사전을 저장했습니다 (${data.pairs}줄).` : '사전 저장 실패', !res.ok);
+};
+
+$('run').onclick = async () => {
+  const filenames = lines($('filenames').value);
+  const keywords = $('keywords').value;
+  if (!filenames.length || !keywordList(keywords).length) { setStatus('파일명과 키워드를 입력하세요.', true); return; }
+  $('run').disabled = true;
+  setStatus('검색 중...');
+  try {
+    const res = await fetch('/api/filter', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filenames, keywords, translate: $('translate').checked, dictionary: $('dictionary').value }) });
+    if (!res.ok) throw new Error(res.status);
+    state.result = await res.json();
+    state.excluded = new Set();
+    $('resultPanel').classList.remove('hidden');
+    $('export').disabled = false;
+    $('copyRemain').disabled = false;
+    render();
+    setStatus('완료');
+  } catch (e) {
+    setStatus('검색 실패: ' + e.message, true);
+  } finally {
+    $('run').disabled = false;
+  }
+};
+
+function finalLists() {
+  const r = state.result;
+  const matched = r.matched.filter(m => !state.excluded.has(m.no));
+  const unmatched = r.unmatched.concat(r.matched.filter(m => state.excluded.has(m.no)).map(m => ({ no: m.no, name: m.name })))
+    .sort((a, b) => a.no - b.no);
+  return { matched, unmatched };
+}
+
+function highlight(name, terms) {
+  let html = escapeHtml(name);
+  const words = [...new Set(terms.map(t => t.replace(/^=/, '')))].sort((a, b) => b.length - a.length);
+  for (const w of words) {
+    const pattern = w.split(/\s+/).map(p => escapeHtml(p).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s._\\-]*');
+    try { html = html.replace(new RegExp('(' + pattern + ')(?![^<]*>)', 'gi'), '<mark>$1</mark>'); } catch (e) {}
+  }
+  return html;
+}
+
+function render() {
+  const r = state.result;
+  const { matched, unmatched } = finalLists();
+  $('summary').innerHTML =
+    `<span>전체 <b>${r.matched.length + r.unmatched.length}</b>개</span>` +
+    `<span>제거 대상 <b>${matched.length}</b>개</span>` +
+    `<span>나머지 <b>${unmatched.length}</b>개</span>` +
+    `<span>걸린 키워드 <b>${r.keywords.filter(k => k.count).length}</b> / ${r.keywords.length}</span>`;
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === state.tab));
+  $('matchedTools').classList.toggle('hidden', state.tab !== 'matched');
+  $('matchedHelp').classList.toggle('hidden', state.tab !== 'matched');
+
+  const q = $('search').value.trim().toLowerCase();
+  const has = (...fields) => !q || fields.some(f => String(f).toLowerCase().includes(q));
+  let html = '';
+  if (state.tab === 'matched') {
+    html = '<tr><th></th><th>순번</th><th>파일명</th><th>매칭 키워드</th><th>실제 걸린 단어</th><th>구분</th></tr>';
+    for (const m of r.matched) {
+      if (!has(m.name, m.keywords.join(' '), m.terms.join(' '))) continue;
+      const off = state.excluded.has(m.no);
+      html += `<tr class="${off ? 'excluded' : ''}"><td><input type="checkbox" data-no="${m.no}" ${off ? '' : 'checked'}></td>` +
+        `<td class="num">${m.no}</td><td class="name">${highlight(m.name, m.terms)}</td>` +
+        `<td>${escapeHtml(m.keywords.join(' / '))}</td><td>${escapeHtml([...new Set(m.terms)].join(' / '))}</td>` +
+        `<td><span class="tag">${escapeHtml(m.kinds)}</span></td></tr>`;
+    }
+  } else if (state.tab === 'unmatched') {
+    html = '<tr><th>순번</th><th>파일명</th></tr>';
+    for (const u of unmatched) if (has(u.name)) html += `<tr><td class="num">${u.no}</td><td class="name">${escapeHtml(u.name)}</td></tr>`;
+  } else {
+    html = '<tr><th>키워드</th><th>함께 검색한 번역어</th><th>걸린 파일 수</th></tr>';
+    for (const k of r.keywords) {
+      if (!has(k.keyword, k.translations.join(' '))) continue;
+      html += `<tr><td>${escapeHtml(k.keyword)}</td><td>${escapeHtml(k.translations.join(', ')) || '<span class="count">(사전에 없음)</span>'}</td>` +
+        `<td class="num">${k.count}</td></tr>`;
+    }
+  }
+  $('resultTable').innerHTML = html;
+}
+
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { state.tab = b.dataset.tab; render(); });
+$('search').addEventListener('input', render);
+$('resultTable').addEventListener('change', e => {
+  const no = Number(e.target.dataset.no);
+  if (!no) return;
+  e.target.checked ? state.excluded.delete(no) : state.excluded.add(no);
+  render();
+});
+$('checkAll').onclick = () => { state.excluded.clear(); render(); };
+$('uncheckAll').onclick = () => { state.result.matched.forEach(m => state.excluded.add(m.no)); render(); };
+
+$('export').onclick = async () => {
+  const { matched, unmatched } = finalLists();
+  const res = await fetch('/api/export', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ matched, unmatched, keywords: state.result.keywords }) });
+  if (!res.ok) { setStatus('엑셀 생성 실패', true); return; }
+  const blob = await res.blob();
+  const name = decodeURIComponent((res.headers.get('Content-Disposition') || '').split("''")[1] || '키워드_필터_결과.xlsx');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+$('copyRemain').onclick = async () => {
+  const text = finalLists().unmatched.map(u => u.name).join('\n');
+  try { await navigator.clipboard.writeText(text); setStatus('나머지 파일 목록을 복사했습니다.'); }
+  catch (e) { setStatus('복사 실패 — 브라우저가 클립보드 접근을 막았습니다.', true); }
+};
+
+(async () => {
+  state.defaults = await (await fetch('/api/defaults')).json();
+  $('keywords').value = load('filter.keywords') ?? state.defaults.keywords;
+  $('translate').checked = load('filter.translate') !== '0';
+  $('dictionary').value = state.defaults.dictionary;
+  updateDictCount();
+  updateCounts();
+})();
+{% endraw %}
+</script>
+</body>
+</html>

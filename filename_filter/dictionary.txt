@@ -1,0 +1,263 @@
+# 한글 ↔ 영문 키워드 번역 사전
+#
+# 형식:  한글단어1, 한글단어2 = english1, english2
+#   - 키워드가 왼쪽(한글)에 있으면 오른쪽(영문) 단어들이, 오른쪽에 있으면 왼쪽 단어들이 함께 검색됩니다.
+#   - 대소문자는 구분하지 않습니다. 전각문자(ＳＥＸ 등)도 자동으로 보통 문자로 바꿔서 비교합니다.
+#   - 영문 단어 앞에 = 를 붙이면 "단어 단위"로만 매칭합니다.
+#       예) =cum  →  "Cum.In.Throat" 은 걸리지만 "document" 는 걸리지 않음
+#   - 띄어쓰기가 있는 영문(hidden camera)은 공백/점/밑줄/하이픈이 있어도, 붙어 있어도 매칭합니다.
+#       예) hidden camera → Hidden.Camera, hidden_camera, HiddenCamera
+#   - 나이(10세, 13살, 15歲, 18yo, 18yearsold ...)는 사전 없이 자동으로 서로 변환합니다.
+#   - '#' 로 시작하는 줄은 주석입니다.
+
+# ── 성범죄 / 불법촬영 ──
+강간, 강갼, 강x, x간, 겁탈, 레이프레이 = rape, raped, raping, forced sex
+윤간, 집단강간, 돌림빵 = gang rape, gangrape
+강제 = forced, forcing
+성폭행, 성폭력 = sexual assault, sexually assaulted
+성추행, 추행 = molest, molested, molestation, groping
+아동성추행, 아동성폭행, 아동강간 = child abuse, child molest, child rape
+청소년강간, 청소년성추행, 청소년성폭행, 청소년성행위 = underage sex, minor abuse
+성착취 = sexual exploitation, sex trafficking
+불법촬영물 = illegal filming, illegally filmed
+몰카, 몰캬, 몰레카, 몰래카메라, 몰래촬영, 몰촬, 몰찰, 도촬, 도찰, 뭘카, 몰ㅋ = hidden camera, hidden cam, hiddencam, spy cam, spycam, voyeur, molka, molca
+몰래, 멀래, 모올래, 엿보, 훔쳐 = secretly, peeping, peep, voyeur
+업스커트, 업스커, 업스컷, 업스, 치마속, 치맛속, 밑찍, 밑촬 = upskirt, up skirt
+투시 = see through, see-through, x-ray
+아이피카메라, ip카메라 = ip camera, ipcam, cctv
+딥페이크, 딥페이, 딥페, 페이크, 훼이크 = deepfake, deep fake, fake, faked, face swap
+합성, 합성사진 = deepfake, photoshopped, fake photo, face swap
+유출, 유출영상, 유출본, 유출작, 연인유출, 국산유출, 월유출, U출 = leak, leaked, leaks
+협박 = blackmail, blackmailed, threat, coerced
+납치 = kidnap, kidnapped, abduction, abducted
+수면제 = sleeping pill, drugged, sleep sex
+만취, 꽐라, 꽐라녀, 골뱅이, 골뱅, 골벵이, 굘뱅이, 굘뱅 = drunk, passed out, wasted
+치한 = molester, chikan, groper
+능욕, 지인능욕 = humiliation, humiliated, humiliate
+고문, 성고문 = torture, tortured
+스너프 = snuff
+비동의, 비동 = non consent, nonconsent, non-consensual
+성매매, 매춘, 창녀, 콜걸, 원정녀, 접대부 = prostitute, prostitution, hooker, call girl, escort
+원조교제, 조건녀 = compensated dating, enjo kosai, sugar daddy
+박카스, 박카스아줌마 = bacchus lady
+
+# ── 미성년 / 나이 ──
+로리, 료리, 노리타 = loli, lolita, lolicon, lorita
+아동 = child, children
+아동포르노 = child porn, child pornography
+페도 = pedo, pedophile, paedo, paedophile
+미성년, 미성 = underage, =minor, =minors
+10대, 십대 = teen, teens, teenage, teenager
+청소년 = adolescent, youth, underage
+영계 = barely legal, jailbait, =young girl
+어린 = =young, =little
+어린년 = young girl, little girl
+소녀, 미소녀 = young girl, little girl, pretty girl
+여고생, 여고 = schoolgirl, school girl, high school girl, highschool girl
+여중생, 여중 = middle school girl, junior high girl
+여학생, 여학, 학생 = student, schoolgirl
+여대생, 여대 = college girl, university girl, coed
+중딩, 중삐리 = middle schooler, junior high
+초딩 = elementary schooler, grade schooler
+고삐리 = high schooler
+교복 = school uniform, uniform
+동급생 = classmate, classmates
+기숙사 = dormitory, dorm
+18금, 19금, 성인, 성인물 = adult, nsfw, r18, x-rated
+
+# ── 장소 ──
+화장실, 화쟝실, 해우소, 변소, 장실, 공중화장실 = toilet, restroom, bathroom, lavatory
+변기 = toilet bowl, toilet
+목욕탕, 여자목욕탕 = bathhouse, public bath, sento
+샤워, 샤워몸캠 = shower, showering
+탈의실, 탈의 = changing room, locker room, dressing room, undressing
+모텔, 무인모텔, 무인텔 = motel
+호텔 = hotel
+여관 = inn
+지하철, 하철 = subway, metro
+버스 = =bus
+길거리 = street
+야외, 야외노출 = outdoor, outdoors, public
+공중 = public
+골프장 = golf course
+노래방 = karaoke
+업소, 퇴폐 = brothel, red light
+안마, 마사지, 맛사지, 건마 = massage
+대딸, 대딸방, 핸플, 핸잡 = handjob, hand job
+오피 = officetel, op girl
+스튜디오 = studio
+리조트 = resort
+온천 = onsen, hot spring
+
+# ── 국가 / 지역 ──
+한국, 국산, 국내, 국노, 국no, 국n, 국녀, 국샨, 한국녀, 쿡 = korean, korea
+일본, 일no, 일노, 일유 = japanese, japan, jav
+중국, 중no, 중노 = chinese, =china
+동양, 동양녀 = asian, oriental
+서양, 서no, 서노 = western, westerner
+러시아 = russian, russia
+미국 = american, america, =usa
+북미 = north america, north american
+유럽 = european, europe
+태국, 태국녀 = thai, thailand
+필리핀 = filipina, filipino, philippines, pinay
+동남아 = southeast asia, southeast asian
+흑형, 흑인 = ebony, =bbc, interracial, blacked
+부산 = busan
+강남 = gangnam
+수원 = suwon
+광양 = gwangyang
+
+# ── 성행위 / 신체 ──
+섹스, 성교, 교미 = sex, intercourse, mating
+섹시 = sexy
+섹파 = fuck buddy, sex friend, sefure
+떡방, 떡실, 떡치기, 빠구리, 씹질 = fuck, fucking, fucked
+자위, 딸딸이 = masturbation, masturbate, masturbating, jerk off, jerking off
+애무 = foreplay, caress, petting
+오르가즘 = orgasm
+신음, 신음소리 = moan, moaning
+오랄, 오럴, 구강성교 = oral, oral sex
+사까시 = blowjob, blow job, fellatio
+구강사정, 입싸, 입ㅆㅏ = cum in mouth, oral creampie
+질내사정, 질내, 질싸, 질사, 중출, 질x사정, 질x사, 나카다시 = creampie, cream pie, nakadashi, internal cum
+정액, 좆물, 좃물 = semen, sperm, cumshot, cum shot, =cum
+부카케 = bukkake, bukake
+애널, 항문, 후장, 뒷구멍, 뒷구녕, 똥구멍, 똥꼬 = anal, anus, asshole, butthole
+항문성교, 항문섹스 = anal sex
+똥까시 = rimjob, rimming
+갱뱅 = gangbang, gang bang
+난교, 혼음, 집단 = orgy, group sex
+쓰리썸 = threesome, 3some
+스와핑 = swapping, swinger, swingers, wife swap
+초대남 = cuckold, =cuck
+네토, 네토라레 = ntr, netorare
+풋잡 = footjob, foot job
+파이즈리 = titjob, titty fuck, paizuri
+딥쓰롯 = deepthroat, deep throat
+분수, 분수녀, 분출 = squirt, squirting
+오줌 = piss, pissing, urine, =pee, peeing
+대변, 탈분, 스캇, 스캣 = scat, poop, pooping, =shit, shitting
+관장 = enema
+구토 = vomit, puke
+수간, 동물섹스 = bestiality, zoophilia, animal sex
+가슴 = breast, breasts, boobs, tits
+유방 = breast, breasts
+거유, 폭유, 첨보는거유 = big tits, big boobs, busty, huge tits
+빈유 = small tits, flat chest, tiny tits
+젖꼭지, 꼭지 = nipple, nipples
+보지, 봉지, 개보지 = pussy, vagina
+빽보지 = shaved pussy, hairless pussy
+보지털, 보짓털, 씹털, 음모 = pubic hair, hairy pussy
+애액, 보짓물, 씹물 = pussy juice, wet pussy
+외음부, 음부 = vulva
+자지, 개자지, 거시기 = penis, cock, =dick
+성기 = genitals, genital
+클리토리스 = clitoris, =clit
+자궁 = womb, uterus
+처녀막 = hymen
+처녀 = virgin
+임신, 임산부 = pregnant, pregnancy, impregnate, impregnation
+콘돔 = condom
+딜도 = dildo
+바이브 = vibrator
+오나홀 = onahole, fleshlight
+리얼돌, 섹스돌 = sex doll, sexdoll, love doll
+누드, 누드집, 알몸 = nude, nudes, naked
+노출 = exposure, flashing, exhibitionist
+레그 = legs, =leg
+스타킹, 검스 = stockings, pantyhose, nylon
+치마 = skirt
+팬티 = panties, panty
+슬렌더, 슬랜더, 슬렌, 슬랜 = slender, slim, skinny
+튼실 = thick, chubby
+
+# ── 성향 / 장르 ──
+근친, 근친상간, 긍친, 상간 = incest
+레즈, 레즈비언 = lesbian, lesbo, lesbians
+게이, 동성애 = gay, homosexual
+트랜스, 트렌스, 트렌스젠더, 쉬메일, 쉬멜, 뉴하프, 젠더 = transgender, trans, shemale, ladyboy, tranny, newhalf
+여장 = crossdress, crossdresser, crossdressing, femboy
+노예, 노예녀, 노예년 = slave, sex slave
+조교 = slave training
+사육 = confinement, breeding
+긴박, 본디지 = bondage, tied up
+펨돔, 팸돔 = femdom
+패티쉬 = fetish
+변태 = pervert, perverted, kinky
+색녀 = slut, nympho, nymphomaniac
+걸레, 개걸레, 국민걸레 = slut, whore
+육변기, 육변, 국민육변기 = cum dump, cumdump, meat toilet
+불륜 = affair, cheating, adultery, infidelity
+하드 = hardcore
+엽기, 극혐 = bizarre, extreme, gross
+수치 = shame, shameful, embarrassing
+음란 = obscene, lewd
+야동, 포르노 = porn, porno, xxx
+망가, 동인지 = manga, doujinshi, doujin, hentai
+애니, 야애니 = anime, hentai
+야게임 = hentai game, eroge
+움짤 = animated gif
+은꼴 = softcore
+
+# ── 인물 / 관계 ──
+엄마, 어머니 = mother, mommy, =mom
+새엄마, 새엄 = stepmom, stepmother, step mom
+아들 = stepson, =son
+딸 = daughter, stepdaughter
+여동생, 여동 = sister, stepsister, step sister, stepsis
+누나 = older sister, big sister, noona
+형수 = sister-in-law, sister in law
+시아버지 = father-in-law, father in law
+아빠, 아버지 = father, daddy, stepdad, =dad
+할머니 = grandma, granny, grandmother
+아줌마, 미시 = milf, auntie, mature
+유부녀, 아내 = =wife, married woman, housewife
+핫와이프 = hotwife
+여친 = girlfriend, =gf
+남친 = boyfriend, =bf
+커플 = couple, couples
+아마추어, 일반인, 일반녀 = amateur, amateurs
+알바녀, 알바 = part-time girl, part timer
+간호사 = nurse
+선생, 여선생 = teacher
+비서 = secretary
+메이드 = maid
+요가녀, 요가 = yoga
+
+# ── 방송 / 플랫폼 ──
+몸캠, 프캠 = webcam, cam girl, camgirl, cam show
+마프캠, 마프 = myfreecams
+벗방 = nude stream, naked stream, nude broadcast
+성인방송, 성방 = adult stream, adult broadcast
+비제이, b제이 = =bj, streamer
+스트리머 = streamer
+텔레그램, 텔레그, 텔레 = telegram
+디스코드 = discord
+텀블러, 텀블 = tumblr
+트위터 = twitter
+채팅 = chatting, =chat
+반디캠, 반디 = bandicam, bandi
+팝콘TV = popkontv, popkon
+조또티비 = zottotv, zotto
+아프리카 = afreeca, afreecatv
+소라넷 = soranet
+n번방, 엔번방, 앤번방, n번, 번방 = nth room
+박사방, 박사 = baksabang
+버닝썬 = burning sun
+와치맨 = watchman
+
+# ── 기타 ──
+셀카, 셀프, 국셀, 직셀 = selfie, self shot, selfshot
+직찍, 직촬, 직찰, 직접촬, 직캠 = fancam, self-filmed, homemade
+개인, 개인촬, 개인촬영 = homemade, personal video
+실제, 실제촬 = real life, true story
+사진 = photo, photos, picture
+촬영, 찰영, 촬영회, 출사 = filming, photo shoot, photoshoot
+비공개 = private video, unreleased
+사생활 = privacy, private life
+노모, 무수정, 무삭제 = uncensored, no mosaic, nomosaic
+유모 = =censored
+모자이크 = mosaic
+모음 = collection, compilation
+헌팅 = pickup, pick up, nampa
